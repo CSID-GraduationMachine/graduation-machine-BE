@@ -1,0 +1,12 @@
+pip==24.1.2
+dj-rest-auth==5.0.2
+django-allauth==0.61.1
+django-cors-headers==4.3.1
+djangorestframework-simplejwt==5.3.1
+Django==4.2.6
+djangorestframework==3.14.0
+drf-nested-routers==0.93.5
+django-extensions==3.2.3
+load_dotenv==0.1.0
+pandas==2.2.2
+mysqlclient==2.2.4
