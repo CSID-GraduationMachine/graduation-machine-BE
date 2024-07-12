@@ -3,11 +3,15 @@ from django.db import models
 class GraduationRequirements(models.Model):
     year = models.IntegerField()
     tech = models.CharField(max_length=255)
-    requirements_name = models.CharField(max_length=255)
-    minimum_credit = models.IntegerField()
+    total_minimum_credit = models.IntegerField()
 
     def __str__(self):
         return f"{self.requirements_name} ({self.year})"
+
+class GraduationRequirementsDetail(models.Model):
+    gr = models.ForeignKey(GraduationRequirements, null=True, blank=True, on_delete=models.SET_NULL)
+    requirements_name = models.CharField(max_length=255)
+    minimum_credit = models.IntegerField()
 
 class LectureGroup(models.Model):
     gr = models.ForeignKey(GraduationRequirements, null=True, blank=True, on_delete=models.SET_NULL)
@@ -37,3 +41,7 @@ class Prerequest(models.Model):
 
     def __str__(self):
         return f"{self.lecture_group} requires {self.prerequest_lecture_group}"
+
+class CommonLectureGroup(models.Model):
+    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
+    common_group_name = models.CharField(max_length=255)
