@@ -50,7 +50,10 @@ class LectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = LectureGroupSerializer
 
     def list(self, request, *args, **kwargs):
-        requirement_id = request.query_params.get('id')
+        """
+        특정 졸업 요건의 강의 그룹 조회
+        """
+        requirement_id = kwargs.get('pk')
         groups = LectureGroupService.get_common_lecture_groups(requirement_id)
         return Response({"success": True, "data": LectureGroupSerializer(groups, many=True).data, "error": None})
 

@@ -5,12 +5,14 @@ from .views import GraduationRequirementsDetailViewSet, LectureViewSet, Prereque
 router = SimpleRouter()
 
 urlpatterns = [
-    # 학과 년도별 졸업이수 조건 조회
+    # 학과 년도별 졸업이수 요건 조회
     path('graduation-requirements-detail', GraduationRequirementsDetailViewSet.as_view({'get': 'list', 'post': 'create', 'delete': 'destroy', 'patch': 'update'})),
 
+    # 특정 졸업 요건의 강의 그룹 조회
+    path('graduation-requirements-detail/<int:pk>/lecture-groups', GraduationRequirementsDetailViewSet.as_view({'get': 'list'})),
 
     # 강의추가
-    
+
 
     # 강의 그룹내 강의 조회, 강의 그룹내 강의 추가, 강의 그룹내 강의 삭제
     path('lecture-groups/lectures', LectureViewSet.as_view({'get': 'list', 'post': 'create', 'delete': 'destroy'})),
