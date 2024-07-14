@@ -11,6 +11,8 @@ from .services.lecture_service import LectureService
 from .services.prerequest_service import PrerequestService
 from .serializers import PrerequestSerializer
 from .services.prerequest_service import PrerequestService
+from .serializers import CommonLectureGroupSerializer
+from .services.common_lecture_group_service import CommonLectureGroupService
 
 class GraduationRequirementsViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = GraduationRequirementsDetailSerializer
@@ -74,3 +76,12 @@ class PrerequestViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.C
         prerequest_lecture_group_id = request.data.get('prerequest_lecture_group_id')
         PrerequestService.add_prerequest(lecture_group_id, prerequest_lecture_group_id)
         return Response({"success": True, "data": None, "error": None})
+    
+
+class CommonLectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    serializer_class = CommonLectureGroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        common_lectures = CommonLectureGroupService.get_all_common_lectures()
+        return Response({"success": True, "data": CommonLectureGroupSerializer(common_lectures, many=True).data, "error": None})

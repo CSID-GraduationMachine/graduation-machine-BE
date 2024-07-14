@@ -3,10 +3,12 @@ from .views import GraduationRequirementsViewSet
 from .views import LectureGroupViewSet
 from .views import LectureViewSet
 from .views import PrerequestViewSet
+from .views import CommonLectureGroupViewSet
 
 urlpatterns = [
     path('graduation_conditions', GraduationRequirementsViewSet.as_view({'get': 'list'})),
     path('common_lecture_groups', LectureGroupViewSet.as_view({'get': 'list'})),
     path('common_lecture_descriptions', LectureViewSet.as_view({'get': 'list'})),
     path('prerequests', PrerequestViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('all_common_lectures', CommonLectureGroupViewSet.as_view({'get': 'list'})),
 ]
