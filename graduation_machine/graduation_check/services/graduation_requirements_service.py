@@ -16,3 +16,17 @@ class GraduationRequirementService:
             return GraduationRequirementsDetail.objects.filter(gr=graduation_requirement)
         except GraduationRequirements.DoesNotExist:
             return None
+        
+    @staticmethod
+    def update_graduation_conditions(requirement_id, data):
+        try:
+            requirement = GraduationRequirementsDetail.objects.get(id=requirement_id)
+            requirement.minimum_credit = data.get('minimum_credit')
+            requirement.requirements_name = data.get('requirement_name')
+            requirement.save()
+            return requirement
+        except GraduationRequirements.DoesNotExist:
+            return None
+        except Exception as e:
+            print(f"An unexpected error occurred while updating graduation conditions: {str(e)}")
+            return None

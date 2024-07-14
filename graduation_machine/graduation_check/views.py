@@ -17,9 +17,8 @@ from .services.common_lecture_group_service import CommonLectureGroupService
 from .services.graduation_check_service import GraduationCheckService
 
 
-class GraduationRequirementsViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class GraduationRequirementsDetailViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = GraduationRequirementsDetailSerializer
-    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
         year = request.query_params.get('year')
@@ -35,6 +34,12 @@ class GraduationRequirementsViewSet(viewsets.GenericViewSet, mixins.ListModelMix
             return Response({"success": True, "data": response_data, "error": None})
         else:
             return Response({"success": False, "error": "Graduation requirements not found"})
+        
+    def patch(self, request, *args, **kwargs):
+        requirement_id = request.query_params.get('graduation_requirements_detail_id')
+        requirement = GraduationRequirementService.update_graduation_conditions(requirement_id, request.data)
+        return Response({"success": True, "data": GraduationRequirementsDetailSerializer(requirement).data, "error": None})
+
 
 class LectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = LectureGroupSerializer
