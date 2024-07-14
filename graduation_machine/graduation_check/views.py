@@ -85,3 +85,14 @@ class CommonLectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     def list(self, request, *args, **kwargs):
         common_lectures = CommonLectureGroupService.get_all_common_lectures()
         return Response({"success": True, "data": CommonLectureGroupSerializer(common_lectures, many=True).data, "error": None})
+    
+    def create(self, request, *args, **kwargs):
+        lecture_ids = request.data.get('lecture_id')
+        common_group_name = request.data.get('lecture_group_name')
+        CommonLectureGroupService.create_common_lecture_group(lecture_ids, common_group_name)
+        return Response({"success": True, "data": None, "error": None})
+    
+    def destroy(self, request, *args, **kwargs):
+        common_group_name = request.data.get('lecture_group_name')
+        CommonLectureGroupService.delete_common_lecture_group(common_group_name)
+        return Response({"success": True, "data": None, "error": None})

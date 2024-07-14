@@ -11,4 +11,6 @@ urlpatterns = [
     path('common_lecture_descriptions', LectureViewSet.as_view({'get': 'list'})),
     path('prerequests', PrerequestViewSet.as_view({'get': 'list', 'post': 'create'})),
     path('all_common_lectures', CommonLectureGroupViewSet.as_view({'get': 'list'})),
+    path('create_common_lecture_group', CommonLectureGroupViewSet.as_view({'post': 'create'})),
+    path('delete_common_lecture_group', CommonLectureGroupViewSet.as_view({'delete': 'destroy'})),
 ]
