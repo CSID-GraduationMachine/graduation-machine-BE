@@ -1,4 +1,4 @@
-from graduation_check.models import CommonLectureGroup
+from graduation_check.models import CommonLectureGroup, CommonLectureGroupLecture
 
 class CommonLectureGroupService:
     @staticmethod
@@ -13,8 +13,9 @@ class CommonLectureGroupService:
     def create_common_lecture_group(lecture_ids, common_group_name):
         try: 
            for lecture_id in lecture_ids:
-              commonLectureGroup = CommonLectureGroup.objects.create(lecture_id=lecture_id, common_group_name=common_group_name)
-              return commonLectureGroup
+              commonLectureGroup = CommonLectureGroup.objects.create(common_group_name=common_group_name)
+              CommonLectureGroupLecture.objects.create(lecture_id=lecture_id, common_lecture_group_id=commonLectureGroup.id)
+              return True
         except(ValueError, TypeError):
             return None
         
