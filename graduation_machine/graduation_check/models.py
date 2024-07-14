@@ -25,6 +25,7 @@ class Lecture(models.Model):
     year = models.IntegerField()
     season = models.CharField(max_length=50)
     code = models.CharField(max_length=50)
+    name = models.CharField(max_length=255)
     credit = models.IntegerField()
     lecture_groups = models.ManyToManyField(LectureGroup, through='LectureLectureGroup')
 
