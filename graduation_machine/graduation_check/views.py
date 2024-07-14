@@ -12,4 +12,4 @@ class GraduationCheckAPIView(views.APIView):
         if not excel_file.name.endswith('.xlsx'):
             return JsonResponse({'error': 'File is not xlsx format'}, status=400)
         
-        return response.Response(GraduationCheckService().check_graduation(year, tech, excel_file))
+        return response.Response({"success": True, "data": GraduationCheckService().check_graduation(year, tech, excel_file), "error": None})
