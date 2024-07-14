@@ -39,6 +39,11 @@ class GraduationRequirementsDetailViewSet(viewsets.GenericViewSet, mixins.ListMo
         requirement_id = request.query_params.get('graduation_requirements_detail_id')
         requirement = GraduationRequirementService.update_graduation_conditions(requirement_id, request.data)
         return Response({"success": True, "data": GraduationRequirementsDetailSerializer(requirement).data, "error": None})
+    
+    def destroy(self, request, *args, **kwargs):
+        requirement_id = request.query_params.get('graduation_requirements_detail_id')
+        GraduationRequirementService.delete_graduation_conditions(requirement_id)
+        return Response({"success": True, "data": None, "error": None})
 
 
 class LectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):

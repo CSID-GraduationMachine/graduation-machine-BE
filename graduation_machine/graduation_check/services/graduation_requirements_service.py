@@ -1,4 +1,4 @@
-from graduation_check.models import GraduationRequirements, GraduationRequirementsDetail
+from graduation_check.models import GraduationRequirements, GraduationRequirementsDetail, LectureGroup, LectureLectureGroup, Prerequest
 from django.shortcuts import get_object_or_404
 
 class GraduationRequirementService:
@@ -29,4 +29,20 @@ class GraduationRequirementService:
             return None
         except Exception as e:
             print(f"An unexpected error occurred while updating graduation conditions: {str(e)}")
+            return None
+        
+    @staticmethod
+    def delete_graduation_conditions(requirement_id):
+        try:
+            requirement = GraduationRequirementsDetail.objects.get(id=requirement_id)
+            lecture_group = LectureGroup.objects.filter(grd=requirement)
+            LectureLectureGroup.objects.filter(lecture_group__in=lecture_group).delete()
+            Prerequest.objects.filter(lecture_group__in=lecture_group).delete()
+            lecture_group.delete()
+            requirement.delete()
+            return True
+        except GraduationRequirements.DoesNotExist:
+            return False
+        except Exception as e:
+            print(f"An unexpected error occurred while deleting graduation conditions: {str(e)}")
             return None
