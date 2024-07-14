@@ -52,13 +52,13 @@ class LectureViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         """
         특정 강의 그룹의 개설 강의들 조회(선이수 포함)
         """
-        group_id = request.query_params.get('id')
-        lectures = LectureService.get_common_lecture_descriptions(group_id)
+        lecture_group_id = request.query_params.get('lecture_group_id')
+        lectures = LectureService.get_common_lecture_descriptions(lecture_group_id)
         prelectures = PrerequestService.get_prerequests()
         prelecture_data = [
             {"pre_lecture_group_name": pre.prerequest_lecture_group.lecture_group_name,
              "pre_lecture_group_id": pre.prerequest_lecture_group.id}
-            for pre in prelectures if pre.lecture_group.id == group_id
+            for pre in prelectures if pre.lecture_group.id == lecture_group_id
         ]
         lecture_data = LectureSerializer(lectures, many=True).data
         return Response({"success": True, "data": [prelecture_data, lecture_data], "error": None})
