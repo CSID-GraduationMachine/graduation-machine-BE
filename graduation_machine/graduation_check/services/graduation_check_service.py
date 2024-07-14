@@ -9,7 +9,7 @@ class GraduationCheckService:
         
         graduation_requirements = GraduationRequirements.objects.get(year = year, tech = tech)
 
-        user_lectures = GraduationCheckUtil.read_excel(excel_file) # year, season, code
+        user_lectures = GraduationCheckUtil.read_report_card(excel_file) # year, season, code, credit
 
         # 1. 총 이수 최소 학점 확인
         total_credit = 0 
