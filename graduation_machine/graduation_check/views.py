@@ -1,6 +1,7 @@
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, views
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.http import JsonResponse
 from .serializers import (
     GraduationRequirementsDetailSerializer,
     LectureGroupSerializer,
@@ -13,6 +14,7 @@ from .services.lecture_group_service import LectureGroupService
 from .services.lecture_service import LectureService
 from .services.prerequest_service import PrerequestService
 from .services.common_lecture_group_service import CommonLectureGroupService
+from .services.graduation_check_service import GraduationCheckService
 from .models import GraduationRequirements
 
 
@@ -95,3 +97,15 @@ class CommonLectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, 
         common_group_name = request.data.get('lecture_group_name')
         CommonLectureGroupService.delete_common_lecture_group(common_group_name)
         return Response({"success": True, "data": None, "error": None})
+      
+class GraduationCheckAPIView(views.APIView):
+
+    def post(self, request, *args, **kwargs):
+        year = self.request.query_params.get('year')
+        tech = self.request.query_params.get('tech')
+        excel_file = request.FILES.get('file')
+
+        if not excel_file.name.endswith('.xlsx'):
+            return JsonResponse({'error': 'File is not xlsx format'}, status=400)
+        
+        return Response({"success": True, "data": GraduationCheckService().check_graduation(year, tech, excel_file), "error": None})

@@ -1,5 +1,8 @@
 from django.urls import path
-from .views import GraduationRequirementsViewSet, LectureGroupViewSet, LectureViewSet, PrerequestViewSet, CommonLectureGroupViewSet
+from rest_framework.routers import SimpleRouter
+from .views import GraduationRequirementsViewSet, LectureGroupViewSet, LectureViewSet, PrerequestViewSet, CommonLectureGroupViewSet, GraduationCheckAPIView
+
+router = SimpleRouter()
 
 urlpatterns = [
     # 학과 년도별 졸업이수 조건 조회
@@ -14,4 +17,6 @@ urlpatterns = [
     path('all_common_lectures', CommonLectureGroupViewSet.as_view({'get': 'list'})),
     # 공통 강의 그룹 추가, 삭제
     path('common_lecture_group', CommonLectureGroupViewSet.as_view({'post': 'create', 'delete': 'destroy'})),
+    # 졸업 요건 만족 검사
+    path('check', GraduationCheckAPIView.as_view(), name='graduation-check'),
 ]

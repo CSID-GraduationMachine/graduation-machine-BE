@@ -14,7 +14,7 @@ class GraduationRequirementsDetail(models.Model):
     minimum_credit = models.IntegerField()
 
 class LectureGroup(models.Model):
-    gr = models.ForeignKey(GraduationRequirements, null=True, blank=True, on_delete=models.SET_NULL)
+    grd = models.ForeignKey(GraduationRequirementsDetail, null=True, blank=True, on_delete=models.SET_NULL)
     lecture_group_name = models.CharField(max_length=255)
     is_mandatory = models.BooleanField(default=False)
 
@@ -25,7 +25,7 @@ class Lecture(models.Model):
     year = models.IntegerField()
     season = models.CharField(max_length=50)
     code = models.CharField(max_length=50)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, default='')
     credit = models.IntegerField()
     lecture_groups = models.ManyToManyField(LectureGroup, through='LectureLectureGroup')
 
