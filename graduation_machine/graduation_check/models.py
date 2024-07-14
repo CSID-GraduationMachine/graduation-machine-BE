@@ -44,5 +44,8 @@ class Prerequest(models.Model):
         return f"{self.lecture_group} requires {self.prerequest_lecture_group}"
 
 class CommonLectureGroup(models.Model):
-    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
     common_group_name = models.CharField(max_length=255)
+
+class CommonLectureGroupLecture(models.Model):
+    common_lecture_group = models.ForeignKey(CommonLectureGroup, on_delete=models.CASCADE)
+    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
