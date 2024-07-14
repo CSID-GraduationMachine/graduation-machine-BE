@@ -60,3 +60,17 @@ class PrerequestViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     def list(self, request, *args, **kwargs):
         prerequests = PrerequestService.get_prerequests()
         return Response({"success": True, "data": PrerequestSerializer(prerequests, many=True).data, "error": None})
+
+class PrerequestViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
+    serializer_class = PrerequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        prerequests = PrerequestService.get_prerequests()
+        return Response({"success": True, "data": PrerequestSerializer(prerequests, many=True).data, "error": None})
+
+    def create(self, request, *args, **kwargs):
+        lecture_group_id = request.data.get('lecture_group_id')
+        prerequest_lecture_group_id = request.data.get('prerequest_lecture_group_id')
+        PrerequestService.add_prerequest(lecture_group_id, prerequest_lecture_group_id)
+        return Response({"success": True, "data": None, "error": None})

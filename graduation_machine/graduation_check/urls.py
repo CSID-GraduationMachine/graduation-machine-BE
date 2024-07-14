@@ -8,5 +8,5 @@ urlpatterns = [
     path('graduation_conditions', GraduationRequirementsViewSet.as_view({'get': 'list'})),
     path('common_lecture_groups', LectureGroupViewSet.as_view({'get': 'list'})),
     path('common_lecture_descriptions', LectureViewSet.as_view({'get': 'list'})),
-    path('prerequests', PrerequestViewSet.as_view({'get': 'list'})),
+    path('prerequests', PrerequestViewSet.as_view({'get': 'list', 'post': 'create'})),
 ]
