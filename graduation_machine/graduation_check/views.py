@@ -1,4 +1,4 @@
-from services.graduation_check_service import GraduationCheckService
+from .services.graduation_check_service import GraduationCheckService
 from rest_framework import views, response
 from django.http import JsonResponse
 
