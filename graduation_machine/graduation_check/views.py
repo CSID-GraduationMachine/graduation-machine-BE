@@ -91,16 +91,25 @@ class CommonLectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, 
     serializer_class = CommonLectureGroupSerializer
 
     def list(self, request, *args, **kwargs):
+        """
+        공통 강의 그룹 조회
+        """
         common_lectures = CommonLectureGroupService.get_all_common_lectures()
         return Response({"success": True, "data": CommonLectureGroupSerializer(common_lectures, many=True).data, "error": None})
 
     def create(self, request, *args, **kwargs):
+        """
+        공통 강의 그룹 생성
+        """
         lecture_ids = request.data.get('lecture_id')
         common_group_name = request.data.get('lecture_group_name')
         CommonLectureGroupService.create_common_lecture_group(lecture_ids, common_group_name)
         return Response({"success": True, "data": None, "error": None})
 
     def destroy(self, request, *args, **kwargs):
+        """
+        공통 강의 그룹 삭제
+        """
         common_lecture_group_id = request.data.get('common_lecture_group_id')
         CommonLectureGroupService.delete_common_lecture_group(common_lecture_group_id)
         return Response({"success": True, "data": None, "error": None})
