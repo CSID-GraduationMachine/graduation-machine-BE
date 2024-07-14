@@ -9,6 +9,8 @@ from .services.lecture_group_service import LectureGroupService
 from .serializers import LectureSerializer
 from .services.lecture_service import LectureService
 from .services.prerequest_service import PrerequestService
+from .serializers import PrerequestSerializer
+from .services.prerequest_service import PrerequestService
 
 class GraduationRequirementsViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = GraduationRequirementsDetailSerializer
@@ -49,3 +51,12 @@ class LectureViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         prelecture_data = [{"pre_lecture_group_name": pre.prerequest_lecture_group.lecture_group_name, "pre_lecture_group_id": pre.prerequest_lecture_group.id} for pre in prelectures if pre.lecture_group.id == group_id]
         lecture_data = LectureSerializer(lectures, many=True).data
         return Response({"success": True, "data": [prelecture_data, lecture_data], "error": None})
+    
+
+class PrerequestViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    serializer_class = PrerequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        prerequests = PrerequestService.get_prerequests()
+        return Response({"success": True, "data": PrerequestSerializer(prerequests, many=True).data, "error": None})
