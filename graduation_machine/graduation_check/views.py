@@ -39,7 +39,6 @@ class GraduationRequirementsViewSet(viewsets.GenericViewSet, mixins.ListModelMix
 
 class LectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = LectureGroupSerializer
-    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
         requirement_id = request.query_params.get('id')
@@ -49,7 +48,6 @@ class LectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
 class LectureViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = LectureSerializer
-    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
         group_id = request.query_params.get('id')
@@ -62,11 +60,21 @@ class LectureViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         ]
         lecture_data = LectureSerializer(lectures, many=True).data
         return Response({"success": True, "data": [prelecture_data, lecture_data], "error": None})
+    
+
+class LecturesInCommonGroupAPIView(views.APIView):
+    """
+    선택한 공통강의의 개설강의 목록 조회
+    """
+    def get(self, request, *args, **kwargs):
+        group_id = request.query_params.get('lecture_group_id')
+        lectures = LectureService.get_common_lectures(group_id)
+        return Response({"success": True, "data": LectureSerializer(lectures, many=True).data, "error": None})
+
 
 
 class PrerequestViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
     serializer_class = PrerequestSerializer
-    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
         prerequests = PrerequestService.get_prerequests()
@@ -81,7 +89,6 @@ class PrerequestViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.C
 
 class CommonLectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin):
     serializer_class = CommonLectureGroupSerializer
-    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
         common_lectures = CommonLectureGroupService.get_all_common_lectures()
