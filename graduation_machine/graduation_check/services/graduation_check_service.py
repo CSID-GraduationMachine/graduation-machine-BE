@@ -74,7 +74,7 @@ class GraduationCheckService:
                     except LectureLectureGroup.DoesNotExist:
                         continue  # lecture_lecture_group이 없으면 다음 요소로 넘어감
                     lecture_group = LectureGroup.objects.get(id = lecture_lecture_group.lecture_group.id)
-                    if lecture_group.id == graduation_requirements_detail.id:
+                    if lecture_group.grd == graduation_requirements_detail:
                         satisfying_credit += user_lecture['credit']
                 if satisfying_credit < graduation_requirements_detail.minimum_credit:
                     data[f"{graduation_requirements_detail.requirements_name}_message"] = f"{satisfying_credit}/{graduation_requirements_detail.minimum_credit}"
@@ -89,33 +89,43 @@ class GraduationCheckService:
 
         # 5. 학점 평점 2.0 이상 확인
         user_lecture_score = 0.0
+        user_total_credit = 0
 
         for user_lecture in user_lectures:
             if user_lecture['grade'] == 'A+':
                 user_lecture_score += 4.5 * user_lecture['credit']
+                user_total_credit += user_lecture['credit']
             elif user_lecture['grade'] == 'A0':
                 user_lecture_score += 4.0 * user_lecture['credit']
+                user_total_credit += user_lecture['credit']
             elif user_lecture['grade'] == 'B+':
                 user_lecture_score += 3.5 * user_lecture['credit']
+                user_total_credit += user_lecture['credit']
             elif user_lecture['grade'] == 'B0':
                 user_lecture_score += 3.0 * user_lecture['credit']
+                user_total_credit += user_lecture['credit']
             elif user_lecture['grade'] == 'C+':
                 user_lecture_score += 2.5 * user_lecture['credit']
+                user_total_credit += user_lecture['credit']
             elif user_lecture['grade'] == 'C0':
                 user_lecture_score += 2.0 * user_lecture['credit']
+                user_total_credit += user_lecture['credit']
             elif user_lecture['grade'] == 'D+':
                 user_lecture_score += 1.5 * user_lecture['credit']
+                user_total_credit += user_lecture['credit']
             elif user_lecture['grade'] == 'D0':
                 user_lecture_score += 1.0 * user_lecture['credit']
+                user_total_credit += user_lecture['credit']
             elif user_lecture['grade'] == 'F':
                 user_lecture_score += 0.0 * user_lecture['credit']
+                user_total_credit += user_lecture['credit']
             else:
                 continue
         if user_lecture_score / total_credit < 2.0:
-            data['grade_point_check_message'] = f"{user_lecture_score / total_credit}"
+            data['grade_point_check_message'] = f"{user_lecture_score / user_total_credit}"
             data['grade_point_check_value'] = False
         else:
-            data['grade_point_check_message'] = f"{user_lecture_score / total_credit}"
+            data['grade_point_check_message'] = f"{user_lecture_score / user_total_credit}"
             data['grade_point_check_value'] = True
         # 결과 JSON 반환
         return data
