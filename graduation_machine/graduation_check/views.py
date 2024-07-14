@@ -23,17 +23,17 @@ class GraduationRequirementsViewSet(viewsets.GenericViewSet, mixins.ListModelMix
     def list(self, request, *args, **kwargs):
         year = request.query_params.get('year')
         tech = request.query_params.get('tech')
-        try:
-            requirements = GraduationRequirementService.get_graduation_conditions(year, tech)
-            details = GraduationRequirementService.get_graduation_requirements_details(requirements)
+        requirements = GraduationRequirementService.get_graduation_conditions(year, tech)
+        
+        if requirements:
+            details = GraduationRequirementService.get_graduation_requirements_details(requirements.id)
             response_data = {
                 "entire_minimum_credit": requirements.total_minimum_credit,
                 "details": GraduationRequirementsDetailSerializer(details, many=True).data
             }
             return Response({"success": True, "data": response_data, "error": None})
-        except GraduationRequirements.DoesNotExist:
+        else:
             return Response({"success": False, "error": "Graduation requirements not found"})
-
 
 class LectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = LectureGroupSerializer
