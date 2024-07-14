@@ -1,11 +1,12 @@
-from graduation_check.models import Lecture, CommonLectureGroup, CommonLectureGroupLecture
+from graduation_check.models import Lecture, LectureGroup, LectureLectureGroup, CommonLectureGroup, CommonLectureGroupLecture
 from django.core.exceptions import ObjectDoesNotExist
 
 class LectureService:
     @staticmethod
     def get_common_lecture_descriptions(group_id):
         try:
-            lectures = Lecture.objects.filter(lecture_groups__id=group_id)
+            lecture_lecture_group = LectureLectureGroup.objects.get(lecture_group__id = group_id)
+            lectures = Lecture.objects.filter(id=lecture_lecture_group.lecture_id)
             if not lectures.exists():
                 return Lecture.objects.none()
             return lectures
@@ -26,4 +27,16 @@ class LectureService:
             return CommonLectureGroup.objects.none()
         except Exception as e:
             print(f"An unexpected error occurred while fetching lectures: {str(e)}")
+            return None
+        
+    @staticmethod
+    def delete_lecture_on_lecture_lecture_group(lecture_id, lecture_group_id):
+        try:
+            lecture_lecture_group = LectureLectureGroup.objects.get(lecture_id=lecture_id, lecture_group_id=lecture_group_id)
+            lecture_lecture_group.delete()
+            return True
+        except LectureLectureGroup.DoesNotExist:
+            return False
+        except Exception as e:
+            print(f"An unexpected error occurred while deleting lecture on lecture group: {str(e)}")
             return None

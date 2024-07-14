@@ -15,7 +15,6 @@ from .services.lecture_service import LectureService
 from .services.prerequest_service import PrerequestService
 from .services.common_lecture_group_service import CommonLectureGroupService
 from .services.graduation_check_service import GraduationCheckService
-from .models import GraduationRequirements
 
 
 class GraduationRequirementsViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
@@ -50,6 +49,9 @@ class LectureViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = LectureSerializer
 
     def list(self, request, *args, **kwargs):
+        """
+        특정 강의 그룹의 개설 강의들 조회(선이수 포함)
+        """
         group_id = request.query_params.get('id')
         lectures = LectureService.get_common_lecture_descriptions(group_id)
         prelectures = PrerequestService.get_prerequests()
@@ -61,6 +63,15 @@ class LectureViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         lecture_data = LectureSerializer(lectures, many=True).data
         return Response({"success": True, "data": [prelecture_data, lecture_data], "error": None})
     
+    def destroy(self, request, *args, **kwargs):
+        """
+        특정 강의 그룹에서 특정 강의 맵핑 삭제
+        """
+        lecture_id = request.query_params.get('lecture_id')
+        lecture_group_id = request.query_params.get('lecture_group_id')
+        LectureService.delete_lecture_on_lecture_lecture_group(lecture_id, lecture_group_id)
+        return Response({"success": True, "data": None, "error": None})
+
 
 class LecturesInCommonGroupAPIView(views.APIView):
     """
