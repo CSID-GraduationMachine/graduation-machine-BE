@@ -21,9 +21,10 @@ class CommonLectureGroupService:
         
 
     @staticmethod
-    def delete_common_lecture_group(group_id):
+    def delete_common_lecture_group(common_lecture_group_id):
         try:
-            group = CommonLectureGroup.objects.get(id=group_id)
+            group = CommonLectureGroup.objects.get(id=common_lecture_group_id)
+            CommonLectureGroupLecture.objects.filter(common_lecture_group_id=group.id).delete()
             group.delete()
             return True
         except CommonLectureGroup.DoesNotExist:
