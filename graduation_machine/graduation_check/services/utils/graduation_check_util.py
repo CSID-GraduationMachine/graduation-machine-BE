@@ -1,12 +1,18 @@
 import pandas as pd
 
 class GraduationCheckUtil:
+    @staticmethod
     def read_report_card(excel_file):
         df = pd.read_excel(excel_file, engine='openpyxl')
         
         user_lectures = []
         for index, row in df.iterrows():
-            lecture_code = f"{row['학수강좌번호']}-{str(row[df.columns[6]]).zfill(2)}"
+            number = str(row[df.columns[6]])
+            if len(number) == 1 or len(number) == 2:
+                lecture_code = f"{row['학수강좌번호']}-{number.zfill(2)}"
+            else:
+                lecture_code = f"{row['학수강좌번호']}-{number}"
+            
             season = ''
             if row['학기'] == '1학기':
                 season = '1'
