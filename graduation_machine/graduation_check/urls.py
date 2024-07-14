@@ -31,5 +31,5 @@ urlpatterns = [
 
 
     # 졸업 요건 만족 검사
-    path('check', GraduationCheckAPIView.as_view(), name='graduation-check'),
+    path('', GraduationCheckAPIView.as_view(), name='graduation-check'),
 ]
