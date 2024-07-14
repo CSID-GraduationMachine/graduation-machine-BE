@@ -18,7 +18,7 @@ class LectureGroupSerializer(serializers.ModelSerializer):
 class LectureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lecture
-        fields = '__all__'
+        fields = ['id', 'year', 'season', 'code', 'name', 'credit']
 
 
 class PrerequestSerializer(serializers.ModelSerializer):

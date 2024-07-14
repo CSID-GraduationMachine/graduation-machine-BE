@@ -15,12 +15,10 @@ from .services.lecture_service import LectureService
 from .services.prerequest_service import PrerequestService
 from .services.common_lecture_group_service import CommonLectureGroupService
 from .services.graduation_check_service import GraduationCheckService
-from .models import GraduationRequirements
 
 
-class GraduationRequirementsViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class GraduationRequirementsDetailViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = GraduationRequirementsDetailSerializer
-    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
         year = request.query_params.get('year')
@@ -36,37 +34,71 @@ class GraduationRequirementsViewSet(viewsets.GenericViewSet, mixins.ListModelMix
             return Response({"success": True, "data": response_data, "error": None})
         else:
             return Response({"success": False, "error": "Graduation requirements not found"})
+        
+    def patch(self, request, *args, **kwargs):
+        requirement_id = request.query_params.get('graduation_requirements_detail_id')
+        requirement = GraduationRequirementService.update_graduation_conditions(requirement_id, request.data)
+        return Response({"success": True, "data": GraduationRequirementsDetailSerializer(requirement).data, "error": None})
+    
+    def destroy(self, request, *args, **kwargs):
+        requirement_id = request.query_params.get('graduation_requirements_detail_id')
+        GraduationRequirementService.delete_graduation_conditions(requirement_id)
+        return Response({"success": True, "data": None, "error": None})
+
 
 class LectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = LectureGroupSerializer
-    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
-        requirement_id = request.query_params.get('id')
+        """
+        특정 졸업 요건의 강의 그룹 조회
+        """
+        requirement_id = kwargs.get('pk')
         groups = LectureGroupService.get_common_lecture_groups(requirement_id)
         return Response({"success": True, "data": LectureGroupSerializer(groups, many=True).data, "error": None})
 
 
 class LectureViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = LectureSerializer
-    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
-        group_id = request.query_params.get('id')
-        lectures = LectureService.get_common_lecture_descriptions(group_id)
+        """
+        특정 강의 그룹의 개설 강의들 조회(선이수 포함)
+        """
+        lecture_group_id = request.query_params.get('lecture_group_id')
+        lectures = LectureService.get_common_lecture_descriptions(lecture_group_id)
         prelectures = PrerequestService.get_prerequests()
         prelecture_data = [
             {"pre_lecture_group_name": pre.prerequest_lecture_group.lecture_group_name,
              "pre_lecture_group_id": pre.prerequest_lecture_group.id}
-            for pre in prelectures if pre.lecture_group.id == group_id
+            for pre in prelectures if pre.lecture_group.id == lecture_group_id
         ]
         lecture_data = LectureSerializer(lectures, many=True).data
         return Response({"success": True, "data": [prelecture_data, lecture_data], "error": None})
+    
+    def destroy(self, request, *args, **kwargs):
+        """
+        특정 강의 그룹에서 특정 강의 맵핑 삭제
+        """
+        lecture_id = request.query_params.get('lecture_id')
+        lecture_group_id = request.query_params.get('lecture_group_id')
+        LectureService.delete_lecture_on_lecture_lecture_group(lecture_id, lecture_group_id)
+        return Response({"success": True, "data": None, "error": None})
+
+
+class LecturesInCommonGroupAPIView(views.APIView):
+    """
+    선택한 공통강의의 개설강의(lecture) 목록 조회
+    """
+    def get(self, request, *args, **kwargs):
+        common_lecture_group_id = request.query_params.get('common_lecture_group_id')
+        lectures = LectureService.get_common_lectures(common_lecture_group_id)
+        return Response({"success": True, "data": LectureSerializer(lectures, many=True).data, "error": None})
+
 
 
 class PrerequestViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
     serializer_class = PrerequestSerializer
-    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
         prerequests = PrerequestService.get_prerequests()
@@ -81,21 +113,29 @@ class PrerequestViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.C
 
 class CommonLectureGroupViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin):
     serializer_class = CommonLectureGroupSerializer
-    permission_classes = [IsAuthenticated]
 
     def list(self, request, *args, **kwargs):
+        """
+        공통 강의 그룹 조회
+        """
         common_lectures = CommonLectureGroupService.get_all_common_lectures()
         return Response({"success": True, "data": CommonLectureGroupSerializer(common_lectures, many=True).data, "error": None})
 
     def create(self, request, *args, **kwargs):
+        """
+        공통 강의 그룹 생성
+        """
         lecture_ids = request.data.get('lecture_id')
         common_group_name = request.data.get('lecture_group_name')
         CommonLectureGroupService.create_common_lecture_group(lecture_ids, common_group_name)
         return Response({"success": True, "data": None, "error": None})
 
     def destroy(self, request, *args, **kwargs):
-        common_group_name = request.data.get('lecture_group_name')
-        CommonLectureGroupService.delete_common_lecture_group(common_group_name)
+        """
+        공통 강의 그룹 삭제
+        """
+        common_lecture_group_id = request.data.get('common_lecture_group_id')
+        CommonLectureGroupService.delete_common_lecture_group(common_lecture_group_id)
         return Response({"success": True, "data": None, "error": None})
       
 class GraduationCheckAPIView(views.APIView):
