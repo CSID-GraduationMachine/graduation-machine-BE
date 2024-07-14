@@ -10,7 +10,8 @@ class GraduationCheckUtil:
                 'year': row['년도'],
                 'season': row['학기'],
                 'code': row['학수강좌번호'],
-                'credit': row['학점']
+                'credit': row['학점'],
+                'grade': row['등급']
             }
             user_lectures.append(lecture_data)
         
