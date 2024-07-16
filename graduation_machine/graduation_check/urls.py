@@ -1,35 +1,35 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
-from .views import GraduationRequirementsDetailViewSet, LectureViewSet, PrerequestViewSet, CommonLectureGroupViewSet, GraduationCheckAPIView, LecturesInCommonGroupAPIView
+from .views import  GraduationRequirementsViewSet, GraduationRequirementsDetailViewSet, LectureLectureGroupViewSet, PrerequestViewSet, LectureGroupViewSet, CommonLectureGroupViewSet, CommonLectureGroupLectureViewSet
 
 router = SimpleRouter()
 
 urlpatterns = [
-    # 학과 년도별 졸업이수 요건 조회
-    path('graduation-requirements-detail', GraduationRequirementsDetailViewSet.as_view({'get': 'list', 'post': 'create', 'delete': 'destroy', 'patch': 'update'})),
+    # 졸업 요건
+    path('graduation-requirements', GraduationRequirementsViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('graduation-requirements/<int:requirements_pk>', GraduationRequirementsViewSet.as_view({'delete': 'destroy', 'patch': 'update'})),
 
-    # 특정 졸업 요건의 강의 그룹 조회
-    path('graduation-requirements-detail/<int:pk>/lecture-groups', GraduationRequirementsDetailViewSet.as_view({'get': 'list'})),
+    # 졸업 요건 상세
+    path('graduation-requirements/<int:requirements_pk>/graduation-requirements-details', GraduationRequirementsDetailViewSet.as_view({'get':'list', 'post': 'create'})),
+    path('graduation-requirements/<int:requirements_pk>/graduation-requirements-details/<int:requirements_details_pk>', GraduationRequirementsDetailViewSet.as_view({'delete': 'destroy', 'patch': 'update'})),
 
-    # 강의추가
+    # 선택한 졸업 요건 상세에 포함된 강의 그룹
+    path('graduation-requirements/<int:requirements_pk>/graduation-requirements-details/<int:requirements_details_pk>/lecture-groups', LectureGroupViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('graduation-requirements/<int:requirements_pk>/graduation-requirements-details/<int:requirements_details_pk>/lecture-groups/<int:lecture_groups_pk>', LectureGroupViewSet.as_view({'delete': 'destroy', 'patch': 'update'})),
 
+    # 선이수
+    path('graduation-requirements/<int:requirements_pk>/graduation-requirements-details/<int:requirements_details_pk>/lecture-groups/<int:lecture_groups_pk>/prerequests', PrerequestViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('graduation-requirements/<int:requirements_pk>/graduation-requirements-details/<int:requirements_details_pk>/lecture-groups/<int:lecture_groups_pk>/prerequests/<int:prerequests_pk>', PrerequestViewSet.as_view({'delete': 'destroy'})),
 
-    # 강의 그룹내 강의 조회, 강의 그룹내 강의 추가, 강의 그룹내 강의 삭제
-    path('lecture-groups/lectures', LectureViewSet.as_view({'get': 'list', 'post': 'create', 'delete': 'destroy'})),
+    # 선택한 강의 그룹의 강의
+    path('graduation-requirements/<int:requirements_pk>/graduation-requirements-details/<int:requirements_details_pk>/lecture-groups/<int:lecture_groups_pk>/lectures', LectureLectureGroupViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('graduation-requirements/<int:requirements_pk>/graduation-requirements-details/<int:requirements_details_pk>/lecture-groups/<int:lecture_groups_pk>/lectures/<int:lecture_lecturegroups_pk>', LectureLectureGroupViewSet.as_view({'delete': 'destroy'})),
 
+    # 공통 강의 그룹
+    path('common-lecture-groups', CommonLectureGroupViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('common-lecture-groups/<int:common_lecture_groups_pk>', CommonLectureGroupViewSet.as_view({'delete': 'destroy', 'patch': 'update'})),
 
-    # 선이수 목록 조회, 추가
-    path('prerequests', PrerequestViewSet.as_view({'get': 'list', 'post': 'create'})),
-
-
-    # 공통 강의 그룹 조회, 추가, 삭제
-    path('common-lecture-groups', CommonLectureGroupViewSet.as_view({'get': 'list', 'post': 'create', 'delete': 'destroy'})),
-
-
-    # 특정 공통 강의 그룹에 속한 강의들 조회
-    path('common-lecture-groups/lectures', LecturesInCommonGroupAPIView.as_view(), name='common-lecture-group-lectures'),
-
-
-    # 졸업 요건 만족 검사
-    path('', GraduationCheckAPIView.as_view(), name='graduation-check'),
+    # 공통 강의 그룹에 포함된 강의
+    path('common-lecture-groups/<int:common_lecture_groups_pk>/lectures', CommonLectureGroupLectureViewSet.as_view({'get': 'list', 'post': 'create'})),
+    path('common-lecture-groups/<int:common_lecture_groups_pk>/lectures/<int:lectures_pk>', CommonLectureGroupLectureViewSet.as_view({'delete': 'destroy'})),
 ]
