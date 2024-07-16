@@ -10,13 +10,21 @@ class CommonLectureGroupService:
             return CommonLectureGroup.objects.none()
 
     @staticmethod
-    def create_common_lecture_group(lecture_ids, common_group_name):
+    def create_common_lecture_group(common_group_name):
         try: 
-           for lecture_id in lecture_ids:
-              commonLectureGroup = CommonLectureGroup.objects.create(common_group_name=common_group_name)
-              CommonLectureGroupLecture.objects.create(lecture_id=lecture_id, common_lecture_group_id=commonLectureGroup.id)
-              return True
+            CommonLectureGroup.objects.create(common_group_name=common_group_name)
+            return True
         except(ValueError, TypeError):
+            return None
+        
+    @staticmethod
+    def update_common_lecture_group(common_lecture_group_id, common_group_name):
+        try:
+            group = CommonLectureGroup.objects.get(id=common_lecture_group_id)
+            group.common_group_name = common_group_name
+            group.save()
+            return True
+        except CommonLectureGroup.DoesNotExist:
             return None
         
 
