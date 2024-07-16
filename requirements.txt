@@ -12,3 +12,8 @@ pandas==2.2.2
 mysqlclient==2.2.4
 et-xmlfile==1.1.0
 openpyxl==3.1.5
+drf_yasg==1.21.7
+inflection==0.5.1 
+packaging==24.1 
+pyyaml==6.0.1 
+uritemplate==4.1.1
