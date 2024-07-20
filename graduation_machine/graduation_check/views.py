@@ -5,20 +5,18 @@ from django.http import JsonResponse
 from .serializers import (
     GraduationRequirementsDetailSerializer,
     LectureGroupSerializer,
-    LectureSerializer,
     LectureLectureGroupSerializer,
     PrerequestSerializer,
     CommonLectureGroupSerializer,
     GraduationRequirementsSerializer,
     CommonLectureGroupLectureSerializer
 )
-from .models import GraduationRequirementsDetail
+
 from .services.common_lecture_group_lecture_service import CommonLectureGroupLectureService
 from .services.graduation_requirements_service import GraduationRequirementService
 from .services.graduation_requirements_detail_service import GraduationRequirementDetailService
 from .services.lecture_lecture_group_service import LectureLectureGroupService
 from .services.lecture_group_service import LectureGroupService
-from .services.lecture_service import LectureService
 from .services.prerequest_service import PrerequestService
 from .services.common_lecture_group_service import CommonLectureGroupService
 from .services.graduation_check_service import GraduationCheckService
@@ -157,7 +155,7 @@ class LectureGroupViewSet(
         """
         선택한 졸업 요건 상세에 포함된 강의 그룹 수정
         """
-        lecture_group_id = kwargs.get('lecture_groups_pk')
+        lecture_group_id = kwargs.get('groups_pk')
         lecture_group_name = request.data.get('lecture_group_name')
         LectureGroupService.update_lecture_group(lecture_group_id, lecture_group_name)
         return Response({"success": True, "data": None, "error": None})
@@ -165,7 +163,7 @@ class LectureGroupViewSet(
         """
         선택한 졸업 요건 상세에 포함된 강의 그룹 삭제
         """
-        lecture_group_id = kwargs.get('lecture_groups_pk')
+        lecture_group_id = kwargs.get('groups_pk')
         LectureGroupService.delete_lecture_group(lecture_group_id)
         return Response({"success": True, "data": None, "error": None})
 
@@ -182,14 +180,14 @@ class LectureLectureGroupViewSet(
         """
         선택한 강의 그룹의 강의 조회
         """
-        lecture_group_id = kwargs.get('lecture_groups_pk')
+        lecture_group_id = kwargs.get('groups_pk')
         lecture_lecturegroups = LectureLectureGroupService.get_lecture_lecturegroups(lecture_group_id)
         return Response({"success": True, "data": LectureLectureGroupSerializer(lecture_lecturegroups, many=True).data, "error": None})
     def create(self, request, *args, **kwargs):
         """
         선택한 강의 그룹의 강의 생성
         """
-        lecture_group_id = kwargs.get('lecture_groups_pk')
+        lecture_group_id = kwargs.get('groups_pk')
         lecture_id = request.data.get('lecture_id')
         LectureLectureGroupService.create_lecture_lecturegroup(lecture_group_id, lecture_id)
         return Response({"success": True, "data": None, "error": None})
@@ -197,7 +195,7 @@ class LectureLectureGroupViewSet(
         """
         선택한 강의 그룹의 강의 삭제
         """
-        lecture_lecturegroups_id = kwargs.get('lecture_lecturegroups_pk')
+        lecture_lecturegroups_id = kwargs.get('lectures_pk')
         LectureLectureGroupService.delete_lecture_lecturegroup(lecture_lecturegroups_id)
         return Response({"success": True, "data": None, "error": None})
     
@@ -207,11 +205,12 @@ class PrerequestViewSet(viewsets.GenericViewSet,
                         mixins.ListModelMixin, 
                         mixins.CreateModelMixin,
                         mixins.DestroyModelMixin):
+    serializer_class = PrerequestSerializer
     def list(self, request, *args, **kwargs):
         """
         선이수 조회
         """
-        lecture_group_id = kwargs.get('lecture_groups_pk')
+        lecture_group_id = kwargs.get('groups_pk')
         prerequests = PrerequestService.get_prerequests(lecture_group_id)
 
         response_data = {
@@ -225,7 +224,7 @@ class PrerequestViewSet(viewsets.GenericViewSet,
         """
         선이수 생성
         """
-        lecture_group_id = kwargs.get('lecture_groups_pk')
+        lecture_group_id = kwargs.get('groups_pk')
         prerequst_lecture_group_id = request.data.get('prerequest_lecture_group_id')
         PrerequestService.create_prerequest(lecture_group_id, prerequst_lecture_group_id)
         return Response({"success": True, "data": None, "error": None})
@@ -267,7 +266,7 @@ class CommonLectureGroupViewSet(viewsets.GenericViewSet,
         """
         공통 강의 그룹 수정
         """
-        common_lecture_group_id = kwargs.get('common_lecture_groups_pk')
+        common_lecture_group_id = kwargs.get('groups_pk')
         common_group_name = request.data.get('common_group_name')
         CommonLectureGroupService.update_common_lecture_group(common_lecture_group_id, common_group_name)
         return Response({"success": True, "data": None, "error": None})
@@ -276,7 +275,7 @@ class CommonLectureGroupViewSet(viewsets.GenericViewSet,
         """
         공통 강의 그룹 삭제
         """
-        common_lecture_group_id = kwargs.get('common_lecture_groups_pk')
+        common_lecture_group_id = kwargs.get('groups_pk')
         CommonLectureGroupService.delete_common_lecture_group(common_lecture_group_id)
         return Response({"success": True, "data": None, "error": None})
     
@@ -292,14 +291,14 @@ class CommonLectureGroupLectureViewSet(
         """
         공통 강의 그룹에 포함된 강의 조회
         """
-        common_lecture_group_id = kwargs.get('common_lecture_groups_pk')
+        common_lecture_group_id = kwargs.get('groups_pk')
         common_lecture_group_lecture = CommonLectureGroupLectureService.get_lectures(common_lecture_group_id)
         return Response({"success": True, "data": CommonLectureGroupLectureSerializer(common_lecture_group_lecture, many=True).data, "error": None})
     def create(self, request, *args, **kwargs):
         """
         공통 강의 그룹에 포함된 강의 생성
         """
-        common_lecture_group_id = kwargs.get('common_lecture_groups_pk')
+        common_lecture_group_id = kwargs.get('groups_pk')
         lecture_id = request.data.get('lecture_id')
         CommonLectureGroupLectureService.create_common_lecture_group_lecture(common_lecture_group_id, lecture_id)
         return Response({"success": True, "data": None, "error": None})
