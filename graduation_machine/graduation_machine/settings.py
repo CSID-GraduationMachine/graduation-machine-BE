@@ -21,7 +21,7 @@ ALLOWED_HOSTS = [
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['dongguk-cse-graduationcheck.site', 'localhost']
 
 
 # Application definition
@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'corsheaders',
     'graduation_check',
 ]
@@ -42,6 +43,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
+    'https://dongguk-cse-graduationcheck.site',
 )
 
 CORS_ALLOW_METHODS = [
@@ -64,6 +66,11 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ['https://dongguk-cse-graduationcheck.site']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
