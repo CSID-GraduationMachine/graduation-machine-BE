@@ -1,40 +1,41 @@
 from rest_framework import serializers
-from .models import GraduationRequirementsDetail
+from .models import LectureCondition
 from .models import LectureGroup
-from .models import Lecture
+from .models import LectureIdentification
 from .models import Prerequest
 from .models import CommonLectureGroup
-from .models import GraduationRequirements
-from .models import LectureLectureGroup
-from .models import CommonLectureGroupLecture
+from .models import Condition
+from .models import LectureIdentificationLectureGroup
+from .models import CommonLectureGroupLectureIdentification
 
-class GraduationRequirementsSerializer(serializers.ModelSerializer):
+class ConditionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = GraduationRequirements
+        model = Condition
         fields = '__all__'
 
-class GraduationRequirementsDetailSerializer(serializers.ModelSerializer):
-
+class LectureConditionSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
     class Meta:
-        model = GraduationRequirementsDetail
-        fields = ['id', 'requirements_name', 'minimum_credit']
+        model = LectureCondition
+        fields = ['id', 'name', 'minimum_credit']
 
+    def get_name(self, obj):
+        return obj.condition_name
 
 class LectureGroupSerializer(serializers.ModelSerializer):
-    is_essential = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
     class Meta:
         model = LectureGroup
-        fields = ['id', 'lecture_group_name', 'is_essential']
-    
-    def get_is_essential(self, obj):
-        return obj.is_mandatory
+        fields = ['id', 'name', 'is_essential']
+    def get_name(self, obj):
+        return obj.lecture_group_name
 
-class LectureSerializer(serializers.ModelSerializer):
+class LectureIdentificationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Lecture
+        model = LectureIdentification
         fields = ['id', 'year', 'season', 'code', 'name', 'credit']
 
-class LectureLectureGroupSerializer(serializers.ModelSerializer):
+class LectureIdentificationLectureGroupSerializer(serializers.ModelSerializer):
     year = serializers.SerializerMethodField()
     season = serializers.SerializerMethodField()
     code = serializers.SerializerMethodField()
@@ -42,35 +43,38 @@ class LectureLectureGroupSerializer(serializers.ModelSerializer):
     credit = serializers.SerializerMethodField()
 
     class Meta:
-        model = LectureLectureGroup
+        model = LectureIdentificationLectureGroup
         fields = ['id', 'year', 'season', 'code', 'name', 'credit']
 
     def get_year(self, obj):
-        return obj.lecture.year
+        return obj.lecture_identification.year
     def get_season(self, obj):
-        return obj.lecture.season
+        return obj.lecture_identification.season
     def get_code(self, obj):
-        return obj.lecture.code
+        return obj.lecture_identification.code
     def get_name(self, obj):
-        return obj.lecture.name
+        return obj.lecture_identification.name
     def get_credit(self, obj):
-        return obj.lecture.credit
+        return obj.lecture_identification.credit
 
 class PrerequestSerializer(serializers.ModelSerializer):
-    prerequest_lecture_name = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
     class Meta:
         model = Prerequest
-        fields = ['id', 'lecture_group', 'prerequest_lecture_group', 'prerequest_lecture_name']
+        fields = ['id', 'name']
 
-    def get_prerequest_lecture_name(self, obj):
+    def get_name(self, obj):
         return obj.prerequest_lecture_group.lecture_group_name
 
 class CommonLectureGroupSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
     class Meta:
         model = CommonLectureGroup
-        fields = '__all__'
+        fields = ['id', 'name']
+    def get_name(self, obj):
+        return obj.common_group_name
 
-class CommonLectureGroupLectureSerializer(serializers.ModelSerializer):
+class CommonLectureGroupLectureIdentificationSerializer(serializers.ModelSerializer):
     year = serializers.SerializerMethodField()
     season = serializers.SerializerMethodField()
     code = serializers.SerializerMethodField()
@@ -78,16 +82,16 @@ class CommonLectureGroupLectureSerializer(serializers.ModelSerializer):
     credit = serializers.SerializerMethodField()
 
     class Meta:
-        model = CommonLectureGroupLecture
+        model = CommonLectureGroupLectureIdentification
         fields = ['id', 'year', 'season', 'code', 'name', 'credit']
 
     def get_year(self, obj):
-        return obj.lecture.year
+        return obj.lecture_identification.year
     def get_season(self, obj):
-        return obj.lecture.season
+        return obj.lecture_identification.season
     def get_code(self, obj):
-        return obj.lecture.code
+        return obj.lecture_identification.code
     def get_name(self, obj):
-        return obj.lecture.name
+        return obj.lecture_identification.name
     def get_credit(self, obj):
-        return obj.lecture.credit
+        return obj.lecture_identification.credit

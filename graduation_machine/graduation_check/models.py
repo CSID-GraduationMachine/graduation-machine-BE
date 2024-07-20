@@ -1,51 +1,60 @@
 from django.db import models
 
-class GraduationRequirements(models.Model):
+
+class Condition(models.Model):
+
     year = models.IntegerField()
     tech = models.CharField(max_length=255)
     total_minimum_credit = models.IntegerField()
 
-    def __str__(self):
-        return f"{self.requirements_name} ({self.year})"
 
-class GraduationRequirementsDetail(models.Model):
-    gr = models.ForeignKey(GraduationRequirements, null=True, blank=True, on_delete=models.SET_NULL)
-    requirements_name = models.CharField(max_length=255)
+class LectureCondition(models.Model):
+
+    condition = models.ForeignKey(Condition, null=True, blank=True, on_delete=models.SET_NULL)
+    condition_name = models.CharField(max_length=255)
     minimum_credit = models.IntegerField()
 
+
 class LectureGroup(models.Model):
-    grd = models.ForeignKey(GraduationRequirementsDetail, null=True, blank=True, on_delete=models.SET_NULL)
+    lecture_condition = models.ForeignKey(LectureCondition, null=True, blank=True, on_delete=models.SET_NULL)
     lecture_group_name = models.CharField(max_length=255)
-    is_mandatory = models.BooleanField(default=False)
+    is_essential = models.BooleanField(default=False)
 
     def __str__(self):
         return self.lecture_group_name
 
-class Lecture(models.Model):
+
+class LectureIdentification(models.Model):
+
     year = models.IntegerField()
     season = models.CharField(max_length=50)
     code = models.CharField(max_length=50)
     name = models.CharField(max_length=255, default='')
     credit = models.IntegerField()
-    lecture_groups = models.ManyToManyField(LectureGroup, through='LectureLectureGroup')
+    lecture_groups = models.ManyToManyField(LectureGroup, through='LectureIdentificationLectureGroup')
 
     def __str__(self):
         return f"{self.code} - {self.year} {self.season}"
 
-class LectureLectureGroup(models.Model):
-    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
+
+class LectureIdentificationLectureGroup(models.Model):
+    lecture_identification = models.ForeignKey(LectureIdentification, on_delete=models.CASCADE)
     lecture_group = models.ForeignKey(LectureGroup, on_delete=models.CASCADE)
+
 
 class Prerequest(models.Model):
     lecture_group = models.ForeignKey(LectureGroup, on_delete=models.CASCADE, related_name='main_lecture_group')
-    prerequest_lecture_group = models.ForeignKey(LectureGroup, on_delete=models.CASCADE, related_name='prerequest_lecture_group')
+    prerequest_lecture_group = models.ForeignKey(LectureGroup, on_delete=models.CASCADE,
+                                                 related_name='prerequest_lecture_group')
 
     def __str__(self):
         return f"{self.lecture_group} requires {self.prerequest_lecture_group}"
 
+
 class CommonLectureGroup(models.Model):
     common_group_name = models.CharField(max_length=255)
 
-class CommonLectureGroupLecture(models.Model):
+
+class CommonLectureGroupLectureIdentification(models.Model):
     common_lecture_group = models.ForeignKey(CommonLectureGroup, on_delete=models.CASCADE)
-    lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
+    lecture_identification = models.ForeignKey(LectureIdentification, on_delete=models.CASCADE)

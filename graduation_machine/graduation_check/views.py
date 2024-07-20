@@ -3,39 +3,39 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 from .serializers import (
-    GraduationRequirementsDetailSerializer,
+    LectureConditionSerializer,
     LectureGroupSerializer,
-    LectureLectureGroupSerializer,
+    LectureIdentificationLectureGroupSerializer,
     PrerequestSerializer,
     CommonLectureGroupSerializer,
-    GraduationRequirementsSerializer,
-    CommonLectureGroupLectureSerializer
+    ConditionSerializer,
+    CommonLectureGroupLectureIdentificationSerializer
 )
 
-from .services.common_lecture_group_lecture_service import CommonLectureGroupLectureService
-from .services.graduation_requirements_service import GraduationRequirementService
-from .services.graduation_requirements_detail_service import GraduationRequirementDetailService
-from .services.lecture_lecture_group_service import LectureLectureGroupService
+from .services.common_lecture_group_lecture_identification_service import CommonLectureGroupLectureIdentificationService
+from .services.condition_service import ConditionService
+from .services.lecture_condition_service import LectureConditionService
+from .services.lecture_identification_lecture_group_service import LectureIdentificationLectureGroupService
 from .services.lecture_group_service import LectureGroupService
 from .services.prerequest_service import PrerequestService
 from .services.common_lecture_group_service import CommonLectureGroupService
 from .services.graduation_check_service import GraduationCheckService
 
-class GraduationRequirementsViewSet(
+class ConditionViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.UpdateModelMixin
 ):
-    serializer_class = GraduationRequirementsSerializer
+    serializer_class = ConditionSerializer
 
     def list(self, request, *args, **kwargs):
         """
         졸업 요건 조회
         """
-        requirements = GraduationRequirementService.get_graduation_requirements()
-        return Response({"success": True, "data": GraduationRequirementsSerializer(requirements, many=True).data, "error": None})
+        requirements = ConditionService.get_conditions()
+        return Response({"success": True, "data": ConditionSerializer(requirements, many=True).data, "error": None})
 
     def create(self, request, *args, **kwargs):
         """
@@ -44,29 +44,29 @@ class GraduationRequirementsViewSet(
         year = request.data.get('year')
         tech = request.data.get('tech')
         total_minimum_credit = request.data.get('total_minimum_credit')
-        GraduationRequirementService.create_graduation_requirements(year, tech, total_minimum_credit)
+        ConditionService.create_condition(year, tech, total_minimum_credit)
         return Response({"success": True, "data": None, "error": None})
 
     def destroy(self, request, *args, **kwargs):
         """
         졸업 요건 삭제
         """
-        requirement_id = kwargs.get('requirements_pk')
-        GraduationRequirementService.delete_graduation_requirements(requirement_id)
+        condition_id = kwargs.get('conditions_pk')
+        ConditionService.delete_condition(condition_id)
         return Response({"success": True, "data": None, "error": None})
 
     def update(self, request, *args, **kwargs):
         """
         졸업 요건 수정
         """
-        requirement_id = kwargs.get('requirements_pk')
+        condition_id = kwargs.get('conditions_pk')
         year = request.data.get('year')
         tech = request.data.get('tech')
         total_minimum_credit = request.data.get('total_minimum_credit')
-        GraduationRequirementService.update_graduation_requirements(requirement_id, year, tech, total_minimum_credit)
+        ConditionService.update_condition(condition_id, year, tech, total_minimum_credit)
         return Response({"success": True, "data": None, "error": None})
 
-class GraduationRequirementsDetailViewSet(
+class LectureConditionViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -74,17 +74,17 @@ class GraduationRequirementsDetailViewSet(
     mixins.UpdateModelMixin
     ):
 
-    serializer_class = GraduationRequirementsDetailSerializer
+    serializer_class = LectureConditionSerializer
 
     def list(self, request, *args, **kwargs):
         """
         졸업 요건 상세 조회
         """
-        requirements_id = kwargs.get('requirements_pk')
-        details = GraduationRequirementDetailService.get_graduation_requirements_details(requirements_id)
-        total_minimum_credit = GraduationRequirementService.get_total_minimum_credit(requirements_id)
+        condition_id = kwargs.get('conditions_pk')
+        details = LectureConditionService.get_lecture_conditions(condition_id)
+        total_minimum_credit = ConditionService.get_total_minimum_credit(condition_id)
         
-        serialized_data = GraduationRequirementsDetailSerializer(details, many=True).data
+        serialized_data = LectureConditionSerializer(details, many=True).data
         
         response_data = {
             "success": True,
@@ -101,28 +101,28 @@ class GraduationRequirementsDetailViewSet(
         """
         졸업 요건 상세 생성
         """
-        requirement_id = kwargs.get('requirements_pk')
-        requirement_name = request.data.get('requirements_name')
+        condition_id = kwargs.get('conditions_pk')
+        lecture_condition_name = request.data.get('name')
         minimum_credit = request.data.get('minimum_credit')
-        GraduationRequirementDetailService.create_graduation_conditions(requirement_id, requirement_name, minimum_credit)
+        LectureConditionService.create_lecture_condition(condition_id, lecture_condition_name, minimum_credit)
         return Response({"success": True, "data": None, "error": None})
         
     def update(self, request, *args, **kwargs):
         """
         졸업 요건 상세 수정
         """
-        requirement_detail_id = kwargs.get('requirements_details_pk')
-        requirements_name = request.data.get('requirements_name')
+        lecture_condition_id = kwargs.get('lecture_conditions_pk')
+        lecture_condition_name = request.data.get('name')
         minimum_credit = request.data.get('minimum_credit')
-        GraduationRequirementDetailService.update_graduation_conditions(requirement_detail_id, requirements_name, minimum_credit)
+        LectureConditionService.update_lecture_condition(lecture_condition_id, lecture_condition_name, minimum_credit)
         return Response({"success": True, "data": None, "error": None})
     
     def destroy(self, request, *args, **kwargs):
         """
         졸업 요건 상세 삭제
         """
-        requirement_detail_id = kwargs.get('requirements_details_pk')
-        GraduationRequirementDetailService.delete_graduation_conditions(requirement_detail_id)
+        lecture_condition_id = kwargs.get('lecture_conditions_pk')
+        LectureConditionService.delete_lecture_condition(lecture_condition_id)
         return Response({"success": True, "data": None, "error": None})
 
 
@@ -139,24 +139,24 @@ class LectureGroupViewSet(
         """
         선택한 졸업 요건 상세에 포함된 강의 그룹 조회
         """
-        requirements_detail_id = kwargs.get('requirements_details_pk')
-        lecture_groups = LectureGroupService.get_lecture_groups(requirements_detail_id)
+        lecture_condition_id = kwargs.get('lecture_conditions_pk')
+        lecture_groups = LectureGroupService.get_lecture_groups(lecture_condition_id)
         return Response({"success": True, "data": LectureGroupSerializer(lecture_groups, many=True).data, "error": None})
     def create(self, request, *args, **kwargs):
         """
         선택한 졸업 요건 상세에 포함된 강의 그룹 생성
         """
-        requirements_detail_id = kwargs.get('requirements_details_pk')
-        lecture_group_name = request.data.get('lecture_group_name')
+        lecture_condition_id = kwargs.get('lecture_conditions_pk')
+        lecture_group_name = request.data.get('name')
         is_essential = request.data.get('is_essential')
-        LectureGroupService.create_lecture_group(requirements_detail_id, lecture_group_name, is_essential)
+        LectureGroupService.create_lecture_group(lecture_condition_id, lecture_group_name, is_essential)
         return Response({"success": True, "data": None, "error": None})
     def update(self, request, *args, **kwargs):
         """
         선택한 졸업 요건 상세에 포함된 강의 그룹 수정
         """
         lecture_group_id = kwargs.get('groups_pk')
-        lecture_group_name = request.data.get('lecture_group_name')
+        lecture_group_name = request.data.get('name')
         LectureGroupService.update_lecture_group(lecture_group_id, lecture_group_name)
         return Response({"success": True, "data": None, "error": None})
     def destroy(self, request, *args, **kwargs):
@@ -168,35 +168,35 @@ class LectureGroupViewSet(
         return Response({"success": True, "data": None, "error": None})
 
 
-class LectureLectureGroupViewSet(
+class LectureIdentificationLectureGroupViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin
     ):
-    serializer_class = LectureLectureGroupSerializer
+    serializer_class = LectureIdentificationLectureGroupSerializer
 
     def list(self, request, *args, **kwargs):
         """
         선택한 강의 그룹의 강의 조회
         """
         lecture_group_id = kwargs.get('groups_pk')
-        lecture_lecturegroups = LectureLectureGroupService.get_lecture_lecturegroups(lecture_group_id)
-        return Response({"success": True, "data": LectureLectureGroupSerializer(lecture_lecturegroups, many=True).data, "error": None})
+        lecture_identification_lecturegroups = LectureIdentificationLectureGroupService.get_lecture_identification_lecturegroups(lecture_group_id)
+        return Response({"success": True, "data": LectureIdentificationLectureGroupSerializer(lecture_identification_lecturegroups, many=True).data, "error": None})
     def create(self, request, *args, **kwargs):
         """
         선택한 강의 그룹의 강의 생성
         """
         lecture_group_id = kwargs.get('groups_pk')
-        lecture_id = request.data.get('lecture_id')
-        LectureLectureGroupService.create_lecture_lecturegroup(lecture_group_id, lecture_id)
+        lecture_identification_id = request.data.get('id')
+        LectureIdentificationLectureGroupService.create_lecture_identification_lecturegroup(lecture_group_id, lecture_identification_id)
         return Response({"success": True, "data": None, "error": None})
     def destroy(self, request, *args, **kwargs):
         """
         선택한 강의 그룹의 강의 삭제
         """
-        lecture_lecturegroups_id = kwargs.get('lectures_pk')
-        LectureLectureGroupService.delete_lecture_lecturegroup(lecture_lecturegroups_id)
+        lecture_id = kwargs.get('lectures_pk')
+        LectureIdentificationLectureGroupService.delete_lecture_identification_lecturegroup(lecture_id)
         return Response({"success": True, "data": None, "error": None})
     
 
@@ -225,7 +225,7 @@ class PrerequestViewSet(viewsets.GenericViewSet,
         선이수 생성
         """
         lecture_group_id = kwargs.get('groups_pk')
-        prerequst_lecture_group_id = request.data.get('prerequest_lecture_group_id')
+        prerequst_lecture_group_id = request.data.get('id')
         PrerequestService.create_prerequest(lecture_group_id, prerequst_lecture_group_id)
         return Response({"success": True, "data": None, "error": None})
     
@@ -258,7 +258,7 @@ class CommonLectureGroupViewSet(viewsets.GenericViewSet,
         """
         공통 강의 그룹 생성
         """
-        common_group_name = request.data.get('common_group_name')
+        common_group_name = request.data.get('name')
         CommonLectureGroupService.create_common_lecture_group(common_group_name)
         return Response({"success": True, "data": None, "error": None})
     
@@ -267,7 +267,7 @@ class CommonLectureGroupViewSet(viewsets.GenericViewSet,
         공통 강의 그룹 수정
         """
         common_lecture_group_id = kwargs.get('groups_pk')
-        common_group_name = request.data.get('common_group_name')
+        common_group_name = request.data.get('name')
         CommonLectureGroupService.update_common_lecture_group(common_lecture_group_id, common_group_name)
         return Response({"success": True, "data": None, "error": None})
 
@@ -279,36 +279,36 @@ class CommonLectureGroupViewSet(viewsets.GenericViewSet,
         CommonLectureGroupService.delete_common_lecture_group(common_lecture_group_id)
         return Response({"success": True, "data": None, "error": None})
     
-class CommonLectureGroupLectureViewSet(
+class CommonLectureGroupLectureIdentificationViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin
     ):
-    serializer_class = CommonLectureGroupLectureSerializer
+    serializer_class = CommonLectureGroupLectureIdentificationSerializer
 
     def list(self, request, *args, **kwargs):
         """
         공통 강의 그룹에 포함된 강의 조회
         """
         common_lecture_group_id = kwargs.get('groups_pk')
-        common_lecture_group_lecture = CommonLectureGroupLectureService.get_lectures(common_lecture_group_id)
-        return Response({"success": True, "data": CommonLectureGroupLectureSerializer(common_lecture_group_lecture, many=True).data, "error": None})
+        common_lecture_group_lecture = CommonLectureGroupLectureIdentificationService.get_lectures(common_lecture_group_id)
+        return Response({"success": True, "data": CommonLectureGroupLectureIdentificationSerializer(common_lecture_group_lecture, many=True).data, "error": None})
     def create(self, request, *args, **kwargs):
         """
         공통 강의 그룹에 포함된 강의 생성
         """
         common_lecture_group_id = kwargs.get('groups_pk')
-        lecture_id = request.data.get('lecture_id')
-        CommonLectureGroupLectureService.create_common_lecture_group_lecture(common_lecture_group_id, lecture_id)
+        common_lecture_identification_id = request.data.get('id')
+        CommonLectureGroupLectureIdentificationService.create_common_lecture_group_lecture_identification(common_lecture_group_id, common_lecture_identification_id)
         return Response({"success": True, "data": None, "error": None})
     def destroy(self, request, *args, **kwargs):
         """
         공통 강의 그룹에 포함된 강의 삭제
         """
 
-        lecture_id = kwargs.get('lectures_pk')
-        CommonLectureGroupLectureService.delete_common_lecture_group_lecture(lecture_id)
+        common_lecture_group_lecture_identification_id = kwargs.get('lectures_pk')
+        CommonLectureGroupLectureIdentificationService.delete_common_lecture_group_lecture_identification(common_lecture_group_lecture_identification_id)
         return Response({"success": True, "data": None, "error": None})
 
 class GraduationCheckAPIView(views.APIView):
