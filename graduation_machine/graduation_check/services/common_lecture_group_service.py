@@ -1,11 +1,11 @@
-from graduation_check.models import CommonLectureGroup, CommonLectureGroupLecture
+from ..models import CommonLectureGroup, CommonLectureGroupLectureIdentification
 
 class CommonLectureGroupService:
     @staticmethod
     def get_all_common_lectures():
         try:
-            commonLectureGroup = CommonLectureGroup.objects.all()
-            return commonLectureGroup
+            common_lecture_group = CommonLectureGroup.objects.all()
+            return common_lecture_group
         except CommonLectureGroup.DoesNotExist:
             return CommonLectureGroup.objects.none()
 
@@ -32,7 +32,7 @@ class CommonLectureGroupService:
     def delete_common_lecture_group(common_lecture_group_id):
         try:
             group = CommonLectureGroup.objects.get(id=common_lecture_group_id)
-            CommonLectureGroupLecture.objects.filter(common_lecture_group_id=group.id).delete()
+            CommonLectureGroupLectureIdentification.objects.filter(common_lecture_group_id=group.id).delete()
             group.delete()
             return True
         except CommonLectureGroup.DoesNotExist:

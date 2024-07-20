@@ -1,4 +1,4 @@
-from graduation_check.models import Prerequest, LectureGroup
+from ..models import Prerequest
 
 class PrerequestService:
     @staticmethod
