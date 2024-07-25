@@ -3,6 +3,16 @@ from django.contrib import admin
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def preflight_options(request, *args, **kwargs):
+    response = JsonResponse({"message": "CORS preflight options successful."})
+    response['Access-Control-Allow-Origin'] = '*'
+    response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, PUT, DELETE, PATCH'
+    response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -24,4 +34,8 @@ urlpatterns = [
     path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('admin/', admin.site.urls),
     path('api/v1/', include('graduation_check.urls')),
+]
+
+urlpatterns += [
+    path('api/v1/<path:path>', preflight_options),
 ]
