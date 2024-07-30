@@ -1,7 +1,8 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 from .views import ConditionViewSet, LectureConditionViewSet, LectureIdentificationLectureGroupViewSet, PrerequestViewSet, LectureGroupViewSet, CommonLectureGroupViewSet, CommonLectureGroupLectureIdentificationViewSet, GraduationCheckAPIView
-
+from .views import LectureIdentificationAPIView
+from .views import LectureGroupForAddPrerequestAPIView
 router = SimpleRouter()
 
 urlpatterns = [
@@ -16,6 +17,8 @@ urlpatterns = [
     # 선택한 졸업 요건 상세에 포함된 강의 그룹
     path('lecture-conditions/<int:lecture_conditions_pk>/lecture-groups', LectureGroupViewSet.as_view({'get': 'list', 'post': 'create'}), name='강의 그룹'),
     path('lecture-conditions/<int:lecture_conditions_pk>/lecture-groups/<int:groups_pk>', LectureGroupViewSet.as_view({'delete': 'destroy', 'patch': 'update'}), name='강의 그룹'),
+    # 선이수 추가를 위한 강의그룹 조회 (자기자신 제외, 이미 추가된 강의그룹 제외)
+    path('lecture-conditions/<int:lecture_conditions_pk>/lecture-groups-for-prerequest/<int:groups_pk>', LectureGroupForAddPrerequestAPIView.as_view(), name='선이수 추가를 위한 강의그룹 조회'),
 
     # 선이수
     path('lecture-groups/<int:groups_pk>/prerequests', PrerequestViewSet.as_view({'get': 'list', 'post': 'create'}), name='선이수'),
@@ -35,4 +38,7 @@ urlpatterns = [
 
     # 졸업 요건 검사
     path('graduation-check', GraduationCheckAPIView.as_view(), name='졸업 요건 검사'),
+
+    # LectureIdentification 조회
+    path('lecture-identifications', LectureIdentificationAPIView.as_view(), name='강의 조회'),
 ]

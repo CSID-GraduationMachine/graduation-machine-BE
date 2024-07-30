@@ -1,6 +1,6 @@
 from rest_framework import viewsets, mixins, views
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 from django.http import JsonResponse
 from .serializers import (
     LectureConditionSerializer,
@@ -20,6 +20,7 @@ from .services.lecture_group_service import LectureGroupService
 from .services.prerequest_service import PrerequestService
 from .services.common_lecture_group_service import CommonLectureGroupService
 from .services.graduation_check_service import GraduationCheckService
+from .services.lecture_identification_service import LectureIdentificationService
 
 class ConditionViewSet(
     viewsets.GenericViewSet,
@@ -181,15 +182,18 @@ class LectureIdentificationLectureGroupViewSet(
         선택한 강의 그룹의 강의 조회
         """
         lecture_group_id = kwargs.get('groups_pk')
-        lecture_identification_lecturegroups = LectureIdentificationLectureGroupService.get_lecture_identification_lecturegroups(lecture_group_id)
+        orderby = request.query_params.get('orderby', 'year')  # 기본값 'year'
+        sorttype = request.query_params.get('sorttype', 'asc')  # 기본값 'asc'
+        lecture_identification_lecturegroups = LectureIdentificationLectureGroupService.get_lecture_identification_lecturegroups(lecture_group_id, orderby, sorttype)
         return Response({"success": True, "data": LectureIdentificationLectureGroupSerializer(lecture_identification_lecturegroups, many=True).data, "error": None})
     def create(self, request, *args, **kwargs):
         """
-        선택한 강의 그룹의 강의 생성
+        선택한 강의 그룹의 강의 생성. keyword가 있을 경우 해당 keyword로 강의 검색하여 해당되는 강의 모두 추가
         """
+        type = self.request.query_params.get('type', 'none')  # 기본값 'none'
+        keyword = request.data.get('keyword')
         lecture_group_id = kwargs.get('groups_pk')
-        lecture_identification_id = request.data.get('id')
-        LectureIdentificationLectureGroupService.create_lecture_identification_lecturegroup(lecture_group_id, lecture_identification_id)
+        LectureIdentificationLectureGroupService.create_lecture_identification_lecturegroup(lecture_group_id, type, keyword)
         return Response({"success": True, "data": None, "error": None})
     def destroy(self, request, *args, **kwargs):
         """
@@ -291,16 +295,20 @@ class CommonLectureGroupLectureIdentificationViewSet(
         """
         공통 강의 그룹에 포함된 강의 조회
         """
+        orderby = request.query_params.get('orderby', 'year')  # 기본값 'year'
+        sorttype = request.query_params.get('sorttype', 'asc')  # 기본값 'asc'
+
         common_lecture_group_id = kwargs.get('groups_pk')
-        common_lecture_group_lecture = CommonLectureGroupLectureIdentificationService.get_lectures(common_lecture_group_id)
+        common_lecture_group_lecture = CommonLectureGroupLectureIdentificationService.get_lectures(common_lecture_group_id, orderby, sorttype)
         return Response({"success": True, "data": CommonLectureGroupLectureIdentificationSerializer(common_lecture_group_lecture, many=True).data, "error": None})
     def create(self, request, *args, **kwargs):
         """
         공통 강의 그룹에 포함된 강의 생성
         """
         common_lecture_group_id = kwargs.get('groups_pk')
-        common_lecture_identification_id = request.data.get('id')
-        CommonLectureGroupLectureIdentificationService.create_common_lecture_group_lecture_identification(common_lecture_group_id, common_lecture_identification_id)
+        type = self.request.query_params.get('type', 'none')  # 기본값 'none'
+        keyword = request.data.get('keyword')
+        CommonLectureGroupLectureIdentificationService.create_common_lecture_group_lecture_identification(common_lecture_group_id, type, keyword)
         return Response({"success": True, "data": None, "error": None})
     def destroy(self, request, *args, **kwargs):
         """
@@ -310,6 +318,27 @@ class CommonLectureGroupLectureIdentificationViewSet(
         common_lecture_group_lecture_identification_id = kwargs.get('lectures_pk')
         CommonLectureGroupLectureIdentificationService.delete_common_lecture_group_lecture_identification(common_lecture_group_lecture_identification_id)
         return Response({"success": True, "data": None, "error": None})
+
+class LectureIdentificationAPIView(views.APIView):
+    def get(self, request, *args, **kwargs):
+        orderby = request.query_params.get('orderby', 'year')  # 기본값 'year'
+        sorttype = request.query_params.get('sorttype', 'asc')  # 기본값 'asc'
+
+        try:
+            data = LectureIdentificationService.get_lecture_identifications(orderby, sorttype)
+            return Response({"success": True, "data": data, "error": None})
+        except ValueError as e:  # orderby 파라미터가 유효하지 않은 경우
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:  # 다른 예외 처리
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class LectureGroupForAddPrerequestAPIView(views.APIView):
+    def get(self, request, *args, **kwargs):
+        lecture_condition_id = kwargs.get('lecture_conditions_pk')
+        lecture_group_id = kwargs.get('groups_pk')
+        lecture_groups = LectureGroupService.get_lecture_groups_for_add_prerequest(lecture_condition_id, lecture_group_id)
+        return Response({"success": True, "data": LectureGroupSerializer(lecture_groups, many=True).data, "error": None})
+
 
 class GraduationCheckAPIView(views.APIView):
 
