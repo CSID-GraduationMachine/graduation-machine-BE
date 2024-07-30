@@ -33,11 +33,30 @@ class LectureIdentificationLectureGroupService:
             print(f"An unexpected error occurred while fetching lectures: {str(e)}")
             return None
         
-    def create_lecture_identification_lecturegroup(lecture_group_id, lecture_identification_id):
+    def create_lecture_identification_lecturegroup(lecture_group_id, type, keyword):
         try:
-            lecture_identification = LectureIdentification.objects.get(id=lecture_identification_id)
+            lecture_identifications=None
+
+            valid_types = ['none', 'name', 'code']
+            if type not in valid_types:
+                raise ValueError("Invalid type parameter")
+            if type == 'none':
+                lecture_identifications = LectureIdentification.objects.get(id=keyword)
+            elif type == 'name':
+                lecture_identifications = LectureIdentification.objects.filter(name__icontains=keyword)
+            elif type == 'code':
+                lecture_identifications = LectureIdentification.objects.filter(code__icontains=keyword)
+
+            # 이미 LectureIdentificationLectureGroup에 등록된 lecture_identification은 제외
+            registered_lecture_identifications_id = LectureIdentificationLectureGroup.objects.filter(
+                lecture_group_id=lecture_group_id
+            ).values_list('lecture_identification_id', flat=True)
+            lecture_identifications = lecture_identifications.exclude(id__in=registered_lecture_identifications_id)
+
             lecture_group = LectureGroup.objects.get(id=lecture_group_id)
-            return LectureIdentificationLectureGroup.objects.create(lecture_group=lecture_group,lecture_identification=lecture_identification)
+            for lecture_identification in lecture_identifications:
+                LectureIdentificationLectureGroup.objects.create(lecture_group=lecture_group, lecture_identification=lecture_identification)
+            return True
         except Exception as e:
             print(f"An unexpected error occurred while creating lecture identification lecturegroup: {str(e)}")
             return None

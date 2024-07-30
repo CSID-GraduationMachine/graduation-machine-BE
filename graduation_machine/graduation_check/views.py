@@ -188,12 +188,12 @@ class LectureIdentificationLectureGroupViewSet(
         return Response({"success": True, "data": LectureIdentificationLectureGroupSerializer(lecture_identification_lecturegroups, many=True).data, "error": None})
     def create(self, request, *args, **kwargs):
         """
-        선택한 강의 그룹의 강의 생성
+        선택한 강의 그룹의 강의 생성. keyword가 있을 경우 해당 keyword로 강의 검색하여 해당되는 강의 모두 추가
         """
+        type = self.request.query_params.get('type', 'none')  # 기본값 'none'
         keyword = request.data.get('keyword')
         lecture_group_id = kwargs.get('groups_pk')
-        lecture_identification_id = request.data.get('id')
-        LectureIdentificationLectureGroupService.create_lecture_identification_lecturegroup(lecture_group_id, lecture_identification_id)
+        LectureIdentificationLectureGroupService.create_lecture_identification_lecturegroup(lecture_group_id, type, keyword)
         return Response({"success": True, "data": None, "error": None})
     def destroy(self, request, *args, **kwargs):
         """
