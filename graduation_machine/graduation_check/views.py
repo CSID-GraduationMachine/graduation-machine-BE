@@ -306,8 +306,9 @@ class CommonLectureGroupLectureIdentificationViewSet(
         공통 강의 그룹에 포함된 강의 생성
         """
         common_lecture_group_id = kwargs.get('groups_pk')
-        common_lecture_identification_id = request.data.get('id')
-        CommonLectureGroupLectureIdentificationService.create_common_lecture_group_lecture_identification(common_lecture_group_id, common_lecture_identification_id)
+        type = self.request.query_params.get('type', 'none')  # 기본값 'none'
+        keyword = request.data.get('keyword')
+        CommonLectureGroupLectureIdentificationService.create_common_lecture_group_lecture_identification(common_lecture_group_id, type, keyword)
         return Response({"success": True, "data": None, "error": None})
     def destroy(self, request, *args, **kwargs):
         """
