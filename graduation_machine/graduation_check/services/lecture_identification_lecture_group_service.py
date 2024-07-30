@@ -1,10 +1,34 @@
 from ..models import LectureIdentificationLectureGroup, LectureGroup, LectureIdentification
-
+from django.db.models import F
 class LectureIdentificationLectureGroupService:
-    
-    def get_lecture_identification_lecturegroups(lecture_group_id):
+
+    def get_lecture_identification_lecturegroups(lecture_group_id, orderby='year', sorttype='asc'):
         try:
-            return LectureIdentificationLectureGroup.objects.filter(lecture_group=lecture_group_id)
+            valid_order_fields = ['year', 'name', 'code']
+            if orderby not in valid_order_fields:
+                raise ValueError("Invalid orderby parameter")
+
+            order_prefix = '-' if sorttype == 'desc' else ''
+
+            lecture_identifications = LectureIdentificationLectureGroup.objects.filter(
+                lecture_group=lecture_group_id
+            ).annotate(
+                sorted_year=F('lecture_identification__year'),
+                sorted_season=F('lecture_identification__season'),
+                sorted_name=F('lecture_identification__name'),
+                sorted_code=F('lecture_identification__code')
+            )
+
+            if orderby == 'year':
+                lecture_identifications = lecture_identifications.order_by(
+                    f"{order_prefix}sorted_year", f"{order_prefix}sorted_season"
+                )
+            elif orderby == 'name':
+                lecture_identifications = lecture_identifications.order_by(f"{order_prefix}sorted_name")
+            elif orderby == 'code':
+                lecture_identifications = lecture_identifications.order_by(f"{order_prefix}sorted_code")
+
+            return lecture_identifications
         except Exception as e:
             print(f"An unexpected error occurred while fetching lectures: {str(e)}")
             return None

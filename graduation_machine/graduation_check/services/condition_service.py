@@ -11,7 +11,7 @@ class ConditionService:
     @staticmethod
     def get_conditions():
         try:
-            return Condition.objects.all()
+            return Condition.objects.all().order_by('year')
         except Exception as e:
             print(f"An unexpected error occurred while fetching conditions: {str(e)}")
             return None

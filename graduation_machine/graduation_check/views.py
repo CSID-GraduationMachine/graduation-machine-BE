@@ -182,12 +182,15 @@ class LectureIdentificationLectureGroupViewSet(
         선택한 강의 그룹의 강의 조회
         """
         lecture_group_id = kwargs.get('groups_pk')
-        lecture_identification_lecturegroups = LectureIdentificationLectureGroupService.get_lecture_identification_lecturegroups(lecture_group_id)
+        orderby = request.query_params.get('orderby', 'year')  # 기본값 'year'
+        sorttype = request.query_params.get('sorttype', 'asc')  # 기본값 'asc'
+        lecture_identification_lecturegroups = LectureIdentificationLectureGroupService.get_lecture_identification_lecturegroups(lecture_group_id, orderby, sorttype)
         return Response({"success": True, "data": LectureIdentificationLectureGroupSerializer(lecture_identification_lecturegroups, many=True).data, "error": None})
     def create(self, request, *args, **kwargs):
         """
         선택한 강의 그룹의 강의 생성
         """
+        keyword = request.data.get('keyword')
         lecture_group_id = kwargs.get('groups_pk')
         lecture_identification_id = request.data.get('id')
         LectureIdentificationLectureGroupService.create_lecture_identification_lecturegroup(lecture_group_id, lecture_identification_id)
@@ -292,8 +295,11 @@ class CommonLectureGroupLectureIdentificationViewSet(
         """
         공통 강의 그룹에 포함된 강의 조회
         """
+        orderby = request.query_params.get('orderby', 'year')  # 기본값 'year'
+        sorttype = request.query_params.get('sorttype', 'asc')  # 기본값 'asc'
+
         common_lecture_group_id = kwargs.get('groups_pk')
-        common_lecture_group_lecture = CommonLectureGroupLectureIdentificationService.get_lectures(common_lecture_group_id)
+        common_lecture_group_lecture = CommonLectureGroupLectureIdentificationService.get_lectures(common_lecture_group_id, orderby, sorttype)
         return Response({"success": True, "data": CommonLectureGroupLectureIdentificationSerializer(common_lecture_group_lecture, many=True).data, "error": None})
     def create(self, request, *args, **kwargs):
         """

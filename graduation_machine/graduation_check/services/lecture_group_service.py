@@ -6,7 +6,7 @@ class LectureGroupService:
     @staticmethod
     def get_lecture_groups(lecture_condition_id):
         try:
-            return LectureGroup.objects.filter(lecture_condition__id=lecture_condition_id)
+            return LectureGroup.objects.filter(lecture_condition__id=lecture_condition_id).order_by('lecture_group_name')
         except Exception as e:
             print(f"An unexpected error occurred while fetching lecture groups: {str(e)}")
             return None
@@ -26,7 +26,7 @@ class LectureGroupService:
                 (
                         Q(id=lecture_group_id) |
                         Q(id__in=registered_lecture_groups_id))
-            )
+            ).order_by('lecture_group_name')
             return available_groups
         except Exception as e:
             print(f"An unexpected error occurred while fetching lecture groups for add prerequest: {str(e)}")

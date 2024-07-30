@@ -4,7 +4,7 @@ class CommonLectureGroupService:
     @staticmethod
     def get_all_common_lectures():
         try:
-            common_lecture_group = CommonLectureGroup.objects.all()
+            common_lecture_group = CommonLectureGroup.objects.all().order_by('common_group_name')
             return common_lecture_group
         except CommonLectureGroup.DoesNotExist:
             return CommonLectureGroup.objects.none()

@@ -13,7 +13,10 @@ class LectureIdentificationService:
 
         if sorttype == 'desc':
             orderby = '-' + orderby
-        lecture_identifications = LectureIdentification.objects.order_by(orderby)
+        if orderby == 'year': # year을 기준으로 정렬할 때, season도 기준으로 정렬
+            lecture_identifications = LectureIdentification.objects.order_by(orderby, 'season')
+        else:
+            lecture_identifications = LectureIdentification.objects.order_by(orderby)
         return list(lecture_identifications.values())
         
     @staticmethod
