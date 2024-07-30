@@ -1,5 +1,6 @@
-from ..models import LectureGroup
+from ..models import LectureGroup, Prerequest, LectureCondition
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 
 class LectureGroupService:
     @staticmethod
@@ -9,6 +10,28 @@ class LectureGroupService:
         except Exception as e:
             print(f"An unexpected error occurred while fetching lecture groups: {str(e)}")
             return None
+    @staticmethod
+    def get_lecture_groups_for_add_prerequest(lecture_condition_id, lecture_group_id):
+        try:
+            # 선이수로 등록된 강의 그룹 ID 조회
+            registered_lecture_groups_id = Prerequest.objects.filter(
+                lecture_group_id=lecture_group_id
+            ).values_list('prerequest_lecture_group_id', flat=True)
+
+            condition = LectureCondition.objects.get(id=lecture_condition_id).condition
+
+            # 현재 condition 상에서, 현재 강의 그룹과 선이수 강의 그룹을 제외한 강의 그룹을 조회
+            available_groups = LectureGroup.objects.exclude(
+                Q(lecture_condition__condition=condition) &
+                (
+                        Q(id=lecture_group_id) |
+                        Q(id__in=registered_lecture_groups_id))
+            )
+            return available_groups
+        except Exception as e:
+            print(f"An unexpected error occurred while fetching lecture groups for add prerequest: {str(e)}")
+            return None
+
     @staticmethod
     def create_lecture_group(lecture_condition_id, lecture_group_name, is_essential):
         try:

@@ -325,6 +325,14 @@ class LectureIdentificationAPIView(views.APIView):
         except Exception as e:  # 다른 예외 처리
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class LectureGroupForAddPrerequestAPIView(views.APIView):
+    def get(self, request, *args, **kwargs):
+        lecture_condition_id = kwargs.get('lecture_conditions_pk')
+        lecture_group_id = kwargs.get('groups_pk')
+        lecture_groups = LectureGroupService.get_lecture_groups_for_add_prerequest(lecture_condition_id, lecture_group_id)
+        return Response({"success": True, "data": LectureGroupSerializer(lecture_groups, many=True).data, "error": None})
+
+
 class GraduationCheckAPIView(views.APIView):
 
     def post(self, request, *args, **kwargs):
