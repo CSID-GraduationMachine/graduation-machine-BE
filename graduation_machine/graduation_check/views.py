@@ -1,6 +1,6 @@
 from rest_framework import viewsets, mixins, views
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 from django.http import JsonResponse
 from .serializers import (
     LectureConditionSerializer,
@@ -20,6 +20,7 @@ from .services.lecture_group_service import LectureGroupService
 from .services.prerequest_service import PrerequestService
 from .services.common_lecture_group_service import CommonLectureGroupService
 from .services.graduation_check_service import GraduationCheckService
+from .services.lecture_identification_service import LectureIdentificationService
 
 class ConditionViewSet(
     viewsets.GenericViewSet,
@@ -310,6 +311,19 @@ class CommonLectureGroupLectureIdentificationViewSet(
         common_lecture_group_lecture_identification_id = kwargs.get('lectures_pk')
         CommonLectureGroupLectureIdentificationService.delete_common_lecture_group_lecture_identification(common_lecture_group_lecture_identification_id)
         return Response({"success": True, "data": None, "error": None})
+
+class LectureIdentificationAPIView(views.APIView):
+    def get(self, request, *args, **kwargs):
+        orderby = request.query_params.get('orderby', 'year')  # 기본값 'year'
+        sorttype = request.query_params.get('sorttype', 'asc')  # 기본값 'asc'
+
+        try:
+            data = LectureIdentificationService.get_lecture_identifications(orderby, sorttype)
+            return Response({"success": True, "data": data, "error": None})
+        except ValueError as e:  # orderby 파라미터가 유효하지 않은 경우
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:  # 다른 예외 처리
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GraduationCheckAPIView(views.APIView):
 

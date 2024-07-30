@@ -1,15 +1,20 @@
-from ..models import LectureIdentification, LectureGroup, LectureIdentificationLectureGroup, CommonLectureGroup, CommonLectureGroupLectureIdentification
+from ..models import LectureIdentification
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.response import Response
+from rest_framework import status
 
 class LectureIdentificationService:
 
     @staticmethod
-    def get_lecture_identifications():
-        try:
-            return LectureIdentification.objects.all()
-        except Exception as e:
-            print(f"An unexpected error occurred while fetching lecture identifications: {str(e)}")
-            return None
+    def get_lecture_identifications(orderby, sorttype):
+        valid_order_fields = ['year', 'name', 'code']
+        if orderby not in valid_order_fields:
+            raise ValueError("Invalid orderby parameter")
+
+        if sorttype == 'desc':
+            orderby = '-' + orderby
+        lecture_identifications = LectureIdentification.objects.order_by(orderby)
+        return list(lecture_identifications.values())
         
     @staticmethod
     def get_lecture_identification_by_id(lecture_identification_id):

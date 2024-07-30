@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 from .views import ConditionViewSet, LectureConditionViewSet, LectureIdentificationLectureGroupViewSet, PrerequestViewSet, LectureGroupViewSet, CommonLectureGroupViewSet, CommonLectureGroupLectureIdentificationViewSet, GraduationCheckAPIView
-
+from .views import LectureIdentificationAPIView
 router = SimpleRouter()
 
 urlpatterns = [
@@ -35,4 +35,7 @@ urlpatterns = [
 
     # 졸업 요건 검사
     path('graduation-check', GraduationCheckAPIView.as_view(), name='졸업 요건 검사'),
+
+    # LectureIdentification 조회
+    path('lecture-identifications', LectureIdentificationAPIView.as_view(), name='강의 조회'),
 ]
