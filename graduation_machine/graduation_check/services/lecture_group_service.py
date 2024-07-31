@@ -40,10 +40,11 @@ class LectureGroupService:
             print(f"An unexpected error occurred while creating lecture group: {str(e)}")
             return None
     @staticmethod
-    def update_lecture_group(lecture_group_id, lecture_group_name):
+    def update_lecture_group(lecture_group_id, lecture_group_name, is_essential):
         try:
             lecture_group = LectureGroup.objects.get(id=lecture_group_id)
             lecture_group.lecture_group_name = lecture_group_name
+            lecture_group.is_essential = is_essential
             lecture_group.save()
             return lecture_group
         except ObjectDoesNotExist:
