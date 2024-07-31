@@ -24,11 +24,17 @@ class LectureConditionSerializer(serializers.ModelSerializer):
 
 class LectureGroupSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+    lectureConditionName = serializers.SerializerMethodField()
+    lectureConditionId = serializers.SerializerMethodField()
     class Meta:
         model = LectureGroup
-        fields = ['id', 'name', 'is_essential']
+        fields = ['id', 'name', 'is_essential', 'lectureConditionName', 'lectureConditionId']
     def get_name(self, obj):
         return obj.lecture_group_name
+    def get_lectureConditionName(self, obj):
+        return obj.lecture_condition.condition_name
+    def get_lectureConditionId(self, obj):
+        return obj.lecture_condition.id
 
 class LectureIdentificationSerializer(serializers.ModelSerializer):
     class Meta:
