@@ -1,4 +1,4 @@
-from ..models import LectureIdentificationLectureGroup, LectureGroup, LectureIdentification, CommonLectureGroup
+from ..models import LectureIdentificationLectureGroup, LectureGroup, LectureIdentification, CommonLectureGroupLectureIdentification
 from django.db.models import F
 class LectureIdentificationLectureGroupService:
 
@@ -63,10 +63,10 @@ class LectureIdentificationLectureGroupService:
     @staticmethod
     def create_lecture_identification_lecturegroup_for_common_lecture_group(lecture_group_id, common_lecture_group_id):
         try:
-            lecture_identifications = CommonLectureGroup.objects.get(id=common_lecture_group_id).lecture_identifications.all()
+            lecture_identifications = CommonLectureGroupLectureIdentification.objects.filter(common_lecture_group_id=common_lecture_group_id).values_list('lecture_identification', flat=True)
             lecture_group = LectureGroup.objects.get(id=lecture_group_id)
             for lecture_identification in lecture_identifications:
-                LectureIdentificationLectureGroup.objects.create(lecture_group=lecture_group, lecture_identification=lecture_identification)
+                LectureIdentificationLectureGroup.objects.create(lecture_group=lecture_group, lecture_identification_id=lecture_identification)
             return True
         except Exception as e:
             print(f"An unexpected error occurred while creating lecture identification lecturegroup for common lecture group: {str(e)}")
