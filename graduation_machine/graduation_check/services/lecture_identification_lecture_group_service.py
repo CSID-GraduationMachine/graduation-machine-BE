@@ -41,7 +41,7 @@ class LectureIdentificationLectureGroupService:
             if type not in valid_types:
                 raise ValueError("Invalid type parameter")
             if type == 'none':
-                lecture_identifications = LectureIdentification.objects.get(id=keyword)
+                lecture_identifications = LectureIdentification.objects.filter(id=keyword)
             elif type == 'name':
                 lecture_identifications = LectureIdentification.objects.filter(name__icontains=keyword)
             elif type == 'code':
