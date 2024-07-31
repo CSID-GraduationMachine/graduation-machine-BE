@@ -3,6 +3,7 @@ from rest_framework.routers import SimpleRouter
 from .views import ConditionViewSet, LectureConditionViewSet, LectureIdentificationLectureGroupViewSet, PrerequestViewSet, LectureGroupViewSet, CommonLectureGroupViewSet, CommonLectureGroupLectureIdentificationViewSet, GraduationCheckAPIView
 from .views import LectureIdentificationAPIView
 from .views import LectureGroupForAddPrerequestAPIView
+from .views import LectureIdentificationLectureGroupForCommonLectureGroupAPIView
 router = SimpleRouter()
 
 urlpatterns = [
@@ -27,7 +28,8 @@ urlpatterns = [
     # 선택한 강의 그룹의 강의
     path('lecture-groups/<int:groups_pk>/lectures', LectureIdentificationLectureGroupViewSet.as_view({'get': 'list', 'post': 'create'}), name='강의 그룹에 포함된 강의'),
     path('lecture-groups/<int:groups_pk>/lectures/<int:lectures_pk>', LectureIdentificationLectureGroupViewSet.as_view({'delete': 'destroy'}), name='강의 그룹에 포함된 강의'),
-
+    # CommonLectureGroup으로 LectureIdentification 추가
+    path('lecture-groups/<int:groups_pk>/lectures-by-common-lecture-group', LectureIdentificationLectureGroupForCommonLectureGroupAPIView.as_view(), name='공통 강의 그룹으로 강의 추가'),
     # 공통 강의 그룹
     path('common-lecture-groups', CommonLectureGroupViewSet.as_view({'get': 'list', 'post': 'create'}),name='공통 강의 그룹'),
     path('common-lecture-groups/<int:groups_pk>', CommonLectureGroupViewSet.as_view({'delete': 'destroy', 'patch': 'update'}),name='공통 강의 그룹'),
