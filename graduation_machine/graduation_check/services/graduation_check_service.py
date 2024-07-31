@@ -126,11 +126,12 @@ class GraduationCheckService:
                         break
                 if lecture_identification_item:
                     lecture_group_list.append({
+                        "id": lecture_group.id,
                         "name": lecture_group.lecture_group_name,
                         "isPassed": lecture_group_is_passed,
                         "isEssential": lecture_group_is_essential,
                         "lectureIdentificationItem": lecture_identification_item,
-                        "prerequestGroupList": prerequest_group_list  # 리스트 추가
+                        "preLectureGroupList": prerequest_group_list  # 리스트 추가
                     })
                 else:
                     lecture_group_list.append({
