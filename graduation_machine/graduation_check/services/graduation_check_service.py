@@ -13,7 +13,7 @@ class GraduationCheckService:
 
         condition = Condition.objects.get(year = year, tech = tech)
 
-        user_lectures = GraduationCheckUtil.read_report_card(excel_file) # year, season, code, credit, grade
+        user_lectures = GraduationCheckUtil.read_report_card(excel_file) # year, season, code, credit, grade, name
         user_lectures_codes = [user_lecture['code'] for user_lecture in user_lectures]
 
         def get_grade_for_code(code):
@@ -60,7 +60,7 @@ class GraduationCheckService:
                     data['essential_lecture_group'].append(essential_status)
 
 
-        # 각각의 졸업 요건 만족 여부 확인
+        # 3. 각각의 졸업 요건 만족 여부 확인
         lecture_conditions = LectureCondition.objects.filter(condition=condition) # 유저의 졸업 요건(몇학번인지, 어떤 과정인지)을 가져와서
         for lecture_condition in lecture_conditions:  # 해당 졸업요건에 속한 lecture_condition 하나하나들에 대해 반복
 
@@ -88,11 +88,11 @@ class GraduationCheckService:
                         grade = get_grade_for_code(lecture_group_lecture_identification.lecture_identification.code)
                         lecture_identification_item = {
                             "id": lecture_group_lecture_identification.lecture_identification.id,
-                            "code": lecture_group_lecture_identification.lecture_identification.code,
-                            "grade": grade,
-                            "name": lecture_group_lecture_identification.lecture_identification.name,
                             "year": lecture_group_lecture_identification.lecture_identification.year,
                             "season": lecture_group_lecture_identification.lecture_identification.season,
+                            "code": lecture_group_lecture_identification.lecture_identification.code,
+                            "name": lecture_group_lecture_identification.lecture_identification.name,
+                            "grade": grade,
                             "credit": lecture_group_lecture_identification.lecture_identification.credit
                         }
 
@@ -155,6 +155,28 @@ class GraduationCheckService:
                 "passedCredit": lecture_condition_passed_credit,
                 "lectureGroupList": lecture_group_list
             })
+        # 4. 일반교양 과목 확인
+        general_education_lectures = []  # 일반교양 과목을 저장할 리스트 초기화
+        all_lecture_conditions_lectures = set()  # 모든 강의 조건에 속하는 강의 코드 저장
+
+        for lecture_condition in lecture_conditions:
+            for lecture_group in lecture_condition.lecturegroup_set.all():
+                for lecture in lecture_group.lectureidentification_set.all():
+                    all_lecture_conditions_lectures.add(lecture.code)
+
+        for user_lecture in user_lectures:
+            if user_lecture['code'] not in all_lecture_conditions_lectures:
+                general_education_lectures.append({
+                    'year': user_lecture['year'],
+                    'season': user_lecture['season'],
+                    'code': user_lecture['code'],
+                    'name': user_lecture['name'],
+                    'grade': user_lecture['grade'],
+                    'credit': user_lecture['credit']
+                })
+
+        data['generalEducation'] = general_education_lectures  # 최종 데이터 구조에 일반교양 섹션 추가
+
 
         # 5. 학점 평점 2.0 이상 확인
         user_lecture_score = 0.0
