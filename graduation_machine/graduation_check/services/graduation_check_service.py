@@ -139,7 +139,7 @@ class GraduationCheckService:
                         "isPassed": lecture_group_is_passed,
                         "isEssential": lecture_group_is_essential,
                         "lectureIdentificationItem": {},
-                        "prerequestGroupList": []  # 빈 리스트 추가
+                        "preLectureGroupList": []  # 빈 리스트 추가
                     })
 
             if lecture_condition_passed_credit >= lecture_condition_minimum_credit:
