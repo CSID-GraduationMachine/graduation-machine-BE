@@ -158,7 +158,8 @@ class LectureGroupViewSet(
         """
         lecture_group_id = kwargs.get('groups_pk')
         lecture_group_name = request.data.get('name')
-        LectureGroupService.update_lecture_group(lecture_group_id, lecture_group_name)
+        is_essential = request.data.get('is_essential')
+        LectureGroupService.update_lecture_group(lecture_group_id, lecture_group_name, is_essential)
         return Response({"success": True, "data": None, "error": None})
     def destroy(self, request, *args, **kwargs):
         """
@@ -339,6 +340,12 @@ class LectureGroupForAddPrerequestAPIView(views.APIView):
         lecture_groups = LectureGroupService.get_lecture_groups_for_add_prerequest(lecture_condition_id, lecture_group_id)
         return Response({"success": True, "data": LectureGroupSerializer(lecture_groups, many=True).data, "error": None})
 
+class LectureIdentificationLectureGroupForCommonLectureGroupAPIView(views.APIView):
+    def post(self, request, *args, **kwargs):
+        lecture_group_id = kwargs.get('groups_pk')
+        common_lecture_group_id = request.data.get('id')
+        LectureIdentificationLectureGroupService.create_lecture_identification_lecturegroup_for_common_lecture_group(lecture_group_id, common_lecture_group_id)
+        return Response({"success": True, "data": None, "error": None})
 
 class GraduationCheckAPIView(views.APIView):
 
