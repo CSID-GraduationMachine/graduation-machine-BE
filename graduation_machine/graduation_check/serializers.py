@@ -67,7 +67,7 @@ class PrerequestSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     class Meta:
         model = Prerequest
-        fields = ['id', 'name']
+        fields = ['id', 'year', 'name']
 
     def get_name(self, obj):
         return obj.prerequest_lecture_group.lecture_group_name
