@@ -354,8 +354,9 @@ class GraduationCheckAPIView(views.APIView):
         year = self.request.query_params.get('year')
         tech = self.request.query_params.get('tech')
         excel_file = request.FILES.get('file')
+        password = request.data.get('password', None)
 
         if not excel_file.name.endswith('.xlsx'):
             return JsonResponse({'error': 'File is not xlsx format'}, status=400)
         
-        return Response({"success": True, "data": GraduationCheckService().check_graduation(year, tech, excel_file), "error": None})
+        return Response({"success": True, "data": GraduationCheckService().check_graduation(year, tech, excel_file, password), "error": None})
