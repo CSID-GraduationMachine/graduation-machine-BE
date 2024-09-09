@@ -2,7 +2,7 @@ from .utils.graduation_check_util import GraduationCheckUtil
 from ..models import LectureGroup, Condition, LectureCondition, LectureIdentification, LectureIdentificationLectureGroup, Prerequest
 
 class GraduationCheckService:
-    def check_graduation(self, year, tech, excel_file):
+    def check_graduation(self, year, tech, excel_file, password):
         # data
         data = {
             'lectureConditionList': [],
@@ -12,10 +12,11 @@ class GraduationCheckService:
         }
 
         condition = Condition.objects.get(year = year, tech = tech)
-
-        user_lectures = GraduationCheckUtil.read_report_card(excel_file) # year, season, code, credit, grade, name
+        if password == None:
+            user_lectures = GraduationCheckUtil.read_report_card_mdrims(excel_file)
+        else:
+            user_lectures = GraduationCheckUtil.read_report_card_ndrims(excel_file, password) # year, season, code, credit, grade, name
         user_lectures_codes = [user_lecture['code'] for user_lecture in user_lectures]
-
         def get_user_lecture_for_code(code):
             for lecture in user_lectures:
                 if lecture['code'] == code:
@@ -156,8 +157,9 @@ class GraduationCheckService:
                 "passedCredit": lecture_condition_passed_credit,
                 "lectureGroupList": lecture_group_list
             })
-        # 4. 일반교양 과목 확인
+        # 4. 일반교양 과목 확인, 필터링되지 않은 과목 확인
         general_education_lectures = []  # 일반교양 과목을 저장할 리스트 초기화
+        unfiltered_lectures = []  # 필터링되지 않은 과목을 저장할 리스트 초기화
         all_lecture_conditions_lectures = set()  # 모든 강의 조건에 속하는 강의 코드 저장
 
         for lecture_condition in lecture_conditions:
@@ -166,6 +168,15 @@ class GraduationCheckService:
                     all_lecture_conditions_lectures.add(lecture.code)
 
         for user_lecture in user_lectures:
+            if user_lecture['code'] == ' - ':
+                unfiltered_lectures.append({
+                    'year': user_lecture['year'],
+                    'season': user_lecture['season'],
+                    'code': user_lecture['code'],
+                    'name': user_lecture['name'],
+                    'grade': user_lecture['grade'],
+                    'credit': user_lecture['credit']
+                })
             if user_lecture['code'] not in all_lecture_conditions_lectures:
                 general_education_lectures.append({
                     'year': user_lecture['year'],
@@ -177,7 +188,7 @@ class GraduationCheckService:
                 })
 
         data['generalEducation'] = general_education_lectures  # 최종 데이터 구조에 일반교양 섹션 추가
-
+        data['unfilteredLectures'] = unfiltered_lectures  # 최종 데이터 구조에 필터링되지 않은 섹션 추가
 
         # 5. 학점 평점 2.0 이상 확인
         user_lecture_score = 0.0
