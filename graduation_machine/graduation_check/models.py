@@ -52,6 +52,7 @@ class LectureIdentificationLectureGroup(models.Model):
 
 class Prerequest(models.Model):
     lecture_group = models.ForeignKey(LectureGroup, on_delete=models.CASCADE, related_name='main_lecture_group')
+    year = models.IntegerField(default=0)
     prerequest_lecture_group = models.ForeignKey(LectureGroup, on_delete=models.CASCADE,
                                                  related_name='prerequest_lecture_group')
 

@@ -16,10 +16,10 @@ class GraduationCheckService:
         user_lectures = GraduationCheckUtil.read_report_card(excel_file) # year, season, code, credit, grade, name
         user_lectures_codes = [user_lecture['code'] for user_lecture in user_lectures]
 
-        def get_grade_for_code(code):
+        def get_user_lecture_for_code(code):
             for lecture in user_lectures:
                 if lecture['code'] == code:
-                    return lecture['grade']
+                    return lecture
             return None
 
         # 1. 총 이수 최소 학점 확인
@@ -83,9 +83,9 @@ class GraduationCheckService:
                 lecture_identification_item = None # lecture_identification_item 초기화
                 prerequest_group_list= []
                 for lecture_group_lecture_identification in lecture_group_lecture_identifications:  # 각각의 lecture_identification에 대해
-                    if lecture_group_lecture_identification.lecture_identification.code in user_lectures_codes:  # 해당 lecture_identification의 수강 여부 확인.
+                    if lecture_group_lecture_identification.lecture_identification.code in user_lectures_codes and lecture_group_lecture_identification.lecture_identification.year == get_user_lecture_for_code(lecture_group_lecture_identification.lecture_identification.code)['year'] and lecture_group_lecture_identification.lecture_identification.season == get_user_lecture_for_code(lecture_group_lecture_identification.lecture_identification.code)['season'] :  # 해당 lecture_identification의 수강 여부 확인.
                         lecture_condition_passed_credit += lecture_group_lecture_identification.lecture_identification.credit  # 해당 lecture_identification의 학점을 더함
-                        grade = get_grade_for_code(lecture_group_lecture_identification.lecture_identification.code)
+                        grade = get_user_lecture_for_code(lecture_group_lecture_identification.lecture_identification.code)['grade']
                         lecture_identification_item = {
                             "id": lecture_group_lecture_identification.lecture_identification.id,
                             "year": lecture_group_lecture_identification.lecture_identification.year,
@@ -97,16 +97,17 @@ class GraduationCheckService:
                         }
 
                         if Prerequest.objects.filter(
-                                lecture_group=lecture_group).exists():  # 선이수가 존재하는지 확인. (수강 + 선이수 만족 -> lecture_group_is_passed = True)
+                                lecture_group=lecture_group, year=lecture_group_lecture_identification.lecture_identification.year).exists():  # 선이수가 존재하는지 확인. (수강 + 선이수 만족 -> lecture_group_is_passed = True)
                             prerequest_group_list = []  # prerequest_group_list 초기화
-                            prerequests = Prerequest.objects.filter(lecture_group=lecture_group)
+                            prerequests = Prerequest.objects.filter(lecture_group=lecture_group, year=lecture_group_lecture_identification.lecture_identification.year)  # 해당 lecture_group의 선이수들을 가져와서
                             prerequests_count = prerequests.count()
                             for prerequest in prerequests:
                                 lecture_identification_lecture_group = LectureIdentificationLectureGroup.objects.filter(
                                     lecture_group=prerequest.prerequest_lecture_group)
                                 prerequest_lecture_codes = [lecture_identification_lecture_group.lecture_identification.code
                                                             for lecture_identification_lecture_group in
-                                                            lecture_identification_lecture_group]
+                                                            lecture_identification_lecture_group
+                                                            if lecture_identification_lecture_group.lecture_identification.year <= prerequest.year]
                                 prerequest_check_data = {
                                     "id": prerequest.prerequest_lecture_group.id,
                                     "name": prerequest.prerequest_lecture_group.lecture_group_name,
