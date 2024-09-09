@@ -231,7 +231,8 @@ class PrerequestViewSet(viewsets.GenericViewSet,
         """
         lecture_group_id = kwargs.get('groups_pk')
         prerequst_lecture_group_id = request.data.get('id')
-        PrerequestService.create_prerequest(lecture_group_id, prerequst_lecture_group_id)
+        prerequest_year = request.data.get('year')
+        PrerequestService.create_prerequest(lecture_group_id, prerequest_year, prerequst_lecture_group_id)
         return Response({"success": True, "data": None, "error": None})
     
     def destroy(self, request, *args, **kwargs):
