@@ -232,6 +232,8 @@ class PrerequestViewSet(viewsets.GenericViewSet,
         lecture_group_id = kwargs.get('groups_pk')
         prerequst_lecture_group_id = request.data.get('id')
         prerequest_year = request.data.get('year')
+        if prerequest_year == 'all':
+            prerequest_year = 10000
         PrerequestService.create_prerequest(lecture_group_id, prerequest_year, prerequst_lecture_group_id)
         return Response({"success": True, "data": None, "error": None})
     

@@ -65,12 +65,18 @@ class LectureIdentificationLectureGroupSerializer(serializers.ModelSerializer):
 
 class PrerequestSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+    year = serializers.SerializerMethodField()
     class Meta:
         model = Prerequest
         fields = ['id', 'year', 'name']
 
     def get_name(self, obj):
         return obj.prerequest_lecture_group.lecture_group_name
+    def get_year(self, obj):
+        year = obj.year
+        if year == 10000:
+            return "all"
+        return year
 
 class CommonLectureGroupSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
