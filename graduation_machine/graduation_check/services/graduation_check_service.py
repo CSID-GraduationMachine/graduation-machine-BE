@@ -22,7 +22,19 @@ class GraduationCheckService:
                 if lecture['code'] == code:
                     return lecture
             return None
-
+        unfiltered_lectures = []
+        for user_lecture in user_lectures:
+            if not LectureIdentification.objects.filter(code=user_lecture['code']).exists():
+                unfiltered_lectures.append({
+                    'year': user_lecture['year'],
+                    'season': user_lecture['season'],
+                    'code': user_lecture['code'],
+                    'name': user_lecture['name'],
+                    'grade': user_lecture['grade'],
+                    'credit': user_lecture['credit']
+                })
+                user_lectures.remove(user_lecture)
+                user_lectures_codes.remove(user_lecture['code'])
         # 1. 총 이수 최소 학점 확인
         total_credit = 0
 
@@ -96,7 +108,7 @@ class GraduationCheckService:
                         if get_user_lecture_for_code(lecture_group_lecture_identification.lecture_identification.code) is not None
                     ]
                 )
-                if matching_lectures.exists() and matching_lectures.count() == 1: # 개별연구가 아닌 일반 강의
+                if matching_lectures.exists() and matching_lectures.count() == 1: # 일반강의 혹은, 단 하나의 개별연구
                     lecture_condition_passed_credit += matching_lectures[0].lecture_identification.credit  # 해당 lecture_identification의 학점을 더함
                     grade = get_user_lecture_for_code(matching_lectures[0].lecture_identification.code)['grade']
                     lecture_identification_item = {
@@ -109,9 +121,13 @@ class GraduationCheckService:
                         "credit": matching_lectures[0].lecture_identification.credit
                     }
                     if Prerequest.objects.filter(
-                            lecture_group=lecture_group, year=matching_lectures[0].lecture_identification.year).exists():  # 선이수가 존재하는지 확인. (수강 + 선이수 만족 -> lecture_group_is_passed = True)
+                            lecture_group=lecture_group, year=matching_lectures[0].lecture_identification.year).exists() or \
+                        Prerequest.objects.filter(lecture_group = lecture_group, year = 10000).exists():  # 선이수가 존재하는지 확인. (수강 + 선이수 만족 -> lecture_group_is_passed = True)
                         prerequest_group_list = []  # prerequest_group_list 초기화
-                        prerequests = Prerequest.objects.filter(lecture_group=lecture_group, year=matching_lectures[0].lecture_identification.year)  # 해당 lecture_group의 선이수들을 가져와서
+                        if Prerequest.objects.filter(lecture_group=lecture_group, year=10000).exists():  # 선이수가 모든 년도에 대해 적용인 경우
+                            prerequests = Prerequest.objects.filter(lecture_group=lecture_group, year=10000)  # 해당 lecture_group의 선이수들을 가져와서
+                        else:
+                            prerequests = Prerequest.objects.filter(lecture_group=lecture_group, year=matching_lectures[0].lecture_identification.year)  # 해당 lecture_group의 선이수들을 가져와서
                         prerequests_count = prerequests.count()
                         for prerequest in prerequests:
                             lecture_identification_lecture_group = LectureIdentificationLectureGroup.objects.filter(
@@ -156,7 +172,7 @@ class GraduationCheckService:
                             "lectureIdentificationItem": {},
                             "preLectureGroupList": []  # 빈 리스트 추가
                         })
-                        break
+                        continue
                     lecture_condition_passed_credit += matching_lectures[individual_research_count].lecture_identification.credit  # 해당 lecture_identification의 학점을 더함
                     grade = get_user_lecture_for_code(matching_lectures[individual_research_count].lecture_identification.code)['grade']
                     lecture_identification_item = {
@@ -205,7 +221,6 @@ class GraduationCheckService:
             })
         # 4. 일반교양 과목 확인, 필터링되지 않은 과목 확인
         general_education_lectures = []  # 일반교양 과목을 저장할 리스트 초기화
-        unfiltered_lectures = []  # 필터링되지 않은 과목을 저장할 리스트 초기화
         all_lecture_conditions_lectures = set()  # 모든 강의 조건에 속하는 강의 코드 저장
 
         for lecture_condition in lecture_conditions:
@@ -214,15 +229,6 @@ class GraduationCheckService:
                     all_lecture_conditions_lectures.add(lecture.code)
 
         for user_lecture in user_lectures:
-            if user_lecture['code'] == ' - ':
-                unfiltered_lectures.append({
-                    'year': user_lecture['year'],
-                    'season': user_lecture['season'],
-                    'code': user_lecture['code'],
-                    'name': user_lecture['name'],
-                    'grade': user_lecture['grade'],
-                    'credit': user_lecture['credit']
-                })
             if user_lecture['code'] not in all_lecture_conditions_lectures:
                 general_education_lectures.append({
                     'year': user_lecture['year'],
@@ -232,7 +238,6 @@ class GraduationCheckService:
                     'grade': user_lecture['grade'],
                     'credit': user_lecture['credit']
                 })
-
         data['generalEducation'] = general_education_lectures  # 최종 데이터 구조에 일반교양 섹션 추가
         data['unfilteredLectures'] = unfiltered_lectures  # 최종 데이터 구조에 필터링되지 않은 섹션 추가
 
@@ -278,5 +283,4 @@ class GraduationCheckService:
             data['grade']['isPassed'] = True
         # 결과 JSON 반환
         return data
-
 
