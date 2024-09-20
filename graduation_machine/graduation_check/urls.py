@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
-from .views import ConditionViewSet, LectureConditionViewSet, LectureIdentificationLectureGroupViewSet, PrerequestViewSet, LectureGroupViewSet, CommonLectureGroupViewSet, CommonLectureGroupLectureIdentificationViewSet, GraduationCheckAPIView
+from .views import ConditionViewSet, LectureConditionViewSet, LectureIdentificationLectureGroupViewSet, PrerequestViewSet, LectureGroupViewSet, CommonLectureGroupViewSet, CommonLectureGroupLectureIdentificationViewSet, GraduationCheckAPIView, MultiLectureGroupViewSet
 from .views import LectureIdentificationAPIView
 from .views import LectureGroupForAddPrerequestAPIView
 from .views import LectureIdentificationLectureGroupForCommonLectureGroupAPIView
@@ -20,6 +20,10 @@ urlpatterns = [
     path('lecture-conditions/<int:lecture_conditions_pk>/lecture-groups/<int:groups_pk>', LectureGroupViewSet.as_view({'delete': 'destroy', 'patch': 'update'}), name='강의 그룹'),
     # 선이수 추가를 위한 강의그룹 조회 (자기자신 제외, 이미 추가된 강의그룹 제외)
     path('lecture-conditions/<int:lecture_conditions_pk>/lecture-groups-for-prerequest/<int:groups_pk>', LectureGroupForAddPrerequestAPIView.as_view(), name='선이수 추가를 위한 강의그룹 조회'),
+
+    # 다중 강의 그룹
+    path('lecture-groups/<int:groups_pk>/multi-lecture-groups', MultiLectureGroupViewSet.as_view({'get':'list','post': 'create'}), name='다중 강의 그룹 생성'),
+    path('lecture-groups/<int:groups_pk>/multi-lecture-groups/<int:multi_pk>', MultiLectureGroupViewSet.as_view({'delete': 'destroy', 'patch': 'update'}), name='다중 강의 그룹 수정'),
 
     # 선이수
     path('lecture-groups/<int:groups_pk>/prerequests', PrerequestViewSet.as_view({'get': 'list', 'post': 'create'}), name='선이수'),

@@ -9,7 +9,8 @@ from .serializers import (
     PrerequestSerializer,
     CommonLectureGroupSerializer,
     ConditionSerializer,
-    CommonLectureGroupLectureIdentificationSerializer
+    CommonLectureGroupLectureIdentificationSerializer,
+    MultiLectureGroupSerializer
 )
 
 from .services.common_lecture_group_lecture_identification_service import CommonLectureGroupLectureIdentificationService
@@ -21,6 +22,7 @@ from .services.prerequest_service import PrerequestService
 from .services.common_lecture_group_service import CommonLectureGroupService
 from .services.graduation_check_service import GraduationCheckService
 from .services.lecture_identification_service import LectureIdentificationService
+from .services.multi_lecture_group_service import MultiLectureGroupService
 
 class ConditionViewSet(
     viewsets.GenericViewSet,
@@ -169,6 +171,47 @@ class LectureGroupViewSet(
         LectureGroupService.delete_lecture_group(lecture_group_id)
         return Response({"success": True, "data": None, "error": None})
 
+class MultiLectureGroupViewSet(
+    viewsets.GenericViewSet,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.UpdateModelMixin
+    ):
+    serializer_class = MultiLectureGroupSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        선택한 강의 그룹에 다중 강의 그룹 생성
+        """
+        lecture_group_id = kwargs.get('groups_pk')
+        MultiLectureGroupService.create_multi_lecture_group(lecture_group_id)
+        return Response({"success": True, "data": None, "error": None})
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        선택한 강의 그룹에 다중 강의 그룹 삭제
+        """
+        multi_lecture_group_id = kwargs.get('multi_pk')
+        MultiLectureGroupService.delete_multi_lecture_group(multi_lecture_group_id)
+        return Response({"success": True, "data": None, "error": None})
+
+    def update(self, request, *args, **kwargs):
+        """
+        선택한 강의 그룹에 다중 강의 그룹 수정
+        """
+        multi_lecture_group_id = kwargs.get('multi_pk')
+        minimum_number = request.data.get('minimum_number')
+        maximum_number = request.data.get('maximum_number')
+        MultiLectureGroupService.update_multi_lecture_group(multi_lecture_group_id, minimum_number, maximum_number)
+        return Response({"success": True, "data": None, "error": None})
+
+    def list(self, request, *args, **kwargs):
+        """
+        선택한 강의 그룹에 다중 강의 그룹 조회
+        """
+        lecture_group_id = kwargs.get('groups_pk')
+        multi_lecture_groups = MultiLectureGroupService.get_multi_lecture_groups(lecture_group_id)
+        return Response({"success": True, "data": MultiLectureGroupSerializer(multi_lecture_groups, many=True).data, "error": None})
 
 class LectureIdentificationLectureGroupViewSet(
     viewsets.GenericViewSet,
