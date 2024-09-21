@@ -32,7 +32,7 @@ class LectureGroup(models.Model):
     lecture_condition = models.ForeignKey(LectureCondition, null=True, blank=True, on_delete=models.SET_NULL)
     lecture_group_name = models.CharField(max_length=255)
     is_essential = models.BooleanField(default=False)
-    multi_lecture_group = models.ForeignKey(MultiLectureGroup, null=True, blank=True, on_delete=models.CASCADE)
+    multi_lecture_group = models.ForeignKey(MultiLectureGroup, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.lecture_group_name
