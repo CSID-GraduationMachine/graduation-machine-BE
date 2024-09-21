@@ -134,14 +134,15 @@ class GraduationCheckService:
                                                         for lecture_identification_lecture_group in
                                                         lecture_identification_lecture_group
                                                         if lecture_identification_lecture_group.lecture_identification.year <= prerequest.year]
+                            prerequest_status = any(code in user_lectures_codes for code in prerequest_lecture_codes)
                             prerequest_check_data = {
                                 "id": prerequest.prerequest_lecture_group.id,
                                 "name": prerequest.prerequest_lecture_group.lecture_group_name,
-                                "status": any(code in user_lectures_codes for code in prerequest_lecture_codes)
+                                "status": prerequest_status
                             }
                             prerequest_group_list.append(prerequest_check_data)  # 리스트에 추가
-                            prerequests_count -= 1
-                            print(prerequests_count)
+                            if prerequest_status:
+                                prerequests_count -= 1
                         if prerequests_count == 0 and grade != 'F':  # 선이수가 없는데 F가 아니라면
                             lecture_group_is_passed = True
                         else:
