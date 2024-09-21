@@ -6,7 +6,7 @@ class MultiLectureGroupService:
             if LectureGroup.objects.get(id=lecture_group_id).multi_lecture_group is not None:
                 raise ValueError("이미 등록된 다중 강의 그룹입니다.")
             else:
-                multi_lecture_group = MultiLectureGroup.objects.create(minimum_credit=1, maximum_credit=1)
+                multi_lecture_group = MultiLectureGroup.objects.create(minimum_number=1, maximum_number=1)
                 lecture_group = LectureGroup.objects.get(id=lecture_group_id)
                 lecture_group.multi_lecture_group = multi_lecture_group
                 lecture_group.save()

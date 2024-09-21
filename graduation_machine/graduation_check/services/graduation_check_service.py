@@ -88,7 +88,6 @@ class GraduationCheckService:
             lecture_groups = LectureGroup.objects.filter(
                 lecture_condition=lecture_condition)  # 해당 lecture_condition에 속한 lecture_group들을 가져와서
             lecture_group_is_passed = False  # 수강 여부 + 선이수 만족 여부
-            individual_research_count = 0
             for lecture_group in lecture_groups:  # 각각의 lecture_group에 대해
                 lecture_group_is_essential = lecture_group.is_essential
                 lecture_group_lecture_identifications = LectureIdentificationLectureGroup.objects.filter(
@@ -108,7 +107,7 @@ class GraduationCheckService:
                         if get_user_lecture_for_code(lecture_group_lecture_identification.lecture_identification.code) is not None
                     ]
                 )
-                if matching_lectures.exists() and matching_lectures.count() == 1: # 일반강의 혹은, 단 하나의 개별연구
+                if matching_lectures.exists() and lecture_group.multi_lecture_group is None: # 일반강의
                     lecture_condition_passed_credit += matching_lectures[0].lecture_identification.credit  # 해당 lecture_identification의 학점을 더함
                     grade = get_user_lecture_for_code(matching_lectures[0].lecture_identification.code)['grade']
                     lecture_identification_item = {
@@ -162,38 +161,67 @@ class GraduationCheckService:
                         "preLectureGroupList": prerequest_group_list  # 리스트 추가
                     })
 
-                elif matching_lectures.exists() and matching_lectures.count() > 1: # 개별연구
-                    if individual_research_count >= len(matching_lectures):
-                        lecture_group_list.append({
-                            "id": lecture_group.id,
-                            "name": lecture_group.lecture_group_name,
-                            "isPassed": lecture_group_is_passed,
-                            "isEssential": lecture_group_is_essential,
-                            "lectureIdentificationItem": {},
-                            "preLectureGroupList": []  # 빈 리스트 추가
-                        })
-                        continue
-                    lecture_condition_passed_credit += matching_lectures[individual_research_count].lecture_identification.credit  # 해당 lecture_identification의 학점을 더함
-                    grade = get_user_lecture_for_code(matching_lectures[individual_research_count].lecture_identification.code)['grade']
-                    lecture_identification_item = {
-                        "id": matching_lectures[individual_research_count].lecture_identification.id,
-                        "year": matching_lectures[individual_research_count].lecture_identification.year,
-                        "season": matching_lectures[individual_research_count].lecture_identification.season,
-                        "code": matching_lectures[individual_research_count].lecture_identification.code,
-                        "name": matching_lectures[individual_research_count].lecture_identification.name,
-                        "grade": grade,
-                        "credit": matching_lectures[individual_research_count].lecture_identification.credit
-                    }
-                    individual_research_count += 1
-                    prerequest_group_list = []  # prerequest_group_list 초기화
-                    if grade != 'F':
+                elif matching_lectures.exists() and lecture_group.multi_lecture_group is not None: # 개별연구 혹은 다중강의그룹
+                    maximum_number = lecture_group.multi_lecture_group.maximum_number
+                    minimum_number = lecture_group.multi_lecture_group.minimum_number
+                    user_number = 0
+                    lecture_identification_items=[]
+
+                    for matching_lecture in matching_lectures:
+                        grade = get_user_lecture_for_code(matching_lecture.lecture_identification.code)['grade']
+                        if(grade != 'F'):
+                            lecture_condition_passed_credit += matching_lecture.lecture_identification.credit
+                            user_number += 1
+
+                        lecture_identification_item = {
+                            "id": matching_lecture.lecture_identification.id,
+                            "year": matching_lecture.lecture_identification.year,
+                            "season": matching_lecture.lecture_identification.season,
+                            "code": matching_lecture.lecture_identification.code,
+                            "name": matching_lecture.lecture_identification.name,
+                            "grade": grade,
+                            "credit": matching_lecture.lecture_identification.credit
+                        }
+                        lecture_identification_items.append(lecture_identification_item)
+                    if Prerequest.objects.filter(
+                            lecture_group=lecture_group, year=matching_lectures[0].lecture_identification.year).exists() or \
+                            Prerequest.objects.filter(lecture_group = lecture_group, year = 10000).exists():  # 선이수가 존재하는지 확인. (수강 + 선이수 만족 -> lecture_group_is_passed = True)
+                        prerequest_group_list = []  # prerequest_group_list 초기화
+                        if Prerequest.objects.filter(lecture_group=lecture_group, year=10000).exists():  # 선이수가 모든 년도에 대해 적용인 경우
+                            prerequests = Prerequest.objects.filter(lecture_group=lecture_group, year=10000)  # 해당 lecture_group의 선이수들을 가져와서
+                        else:
+                            prerequests = Prerequest.objects.filter(lecture_group=lecture_group, year=matching_lectures[0].lecture_identification.year)  # 해당 lecture_group의 선이수들을 가져와서
+                        prerequests_count = prerequests.count()
+                        for prerequest in prerequests:
+                            lecture_identification_lecture_group = LectureIdentificationLectureGroup.objects.filter(
+                                lecture_group=prerequest.prerequest_lecture_group)
+                            prerequest_lecture_codes = [lecture_identification_lecture_group.lecture_identification.code
+                                                        for lecture_identification_lecture_group in
+                                                        lecture_identification_lecture_group
+                                                        if lecture_identification_lecture_group.lecture_identification.year <= prerequest.year]
+                            prerequest_check_data = {
+                                "id": prerequest.prerequest_lecture_group.id,
+                                "name": prerequest.prerequest_lecture_group.lecture_group_name,
+                                "status": any(code in user_lectures_codes for code in prerequest_lecture_codes)
+                            }
+                            prerequest_group_list.append(prerequest_check_data)  # 리스트에 추가
+                            prerequests_count -= 1
+                        if prerequests_count == 0 and user_number >= minimum_number and user_number <= maximum_number:  # 선이수를 다 들었고, 최소, 최대 강의 수 사이에 있다면
+                            lecture_group_is_passed = True
+                        else:
+                            lecture_group_is_passed = False
+
+                    elif user_number >= minimum_number and user_number <= maximum_number:  # 선이수가 없다면
                         lecture_group_is_passed = True
+                    else:
+                        lecture_group_is_passed = False
+
                     lecture_group_list.append({
                         "id": lecture_group.id,
                         "name": lecture_group.lecture_group_name,
                         "isPassed": lecture_group_is_passed,
                         "isEssential": lecture_group_is_essential,
-                        "lectureIdentificationItem": lecture_identification_item,
+                        "lectureIdentificationItem": lecture_identification_items,
                         "preLectureGroupList": prerequest_group_list  # 리스트 추가
                     })
                 else:
