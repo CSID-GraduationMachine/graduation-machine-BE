@@ -20,15 +20,22 @@ class LectureCondition(models.Model):
     def __str__(self):
         return self.condition_name
 
+class MultiLectureGroup(models.Model):
+    minimum_number = models.IntegerField()
+    maximum_number = models.IntegerField()
+
+    def __str__(self):
+        return f"최소 {self.minimum_number}개, 최대 {self.maximum_number}개"
+
 
 class LectureGroup(models.Model):
     lecture_condition = models.ForeignKey(LectureCondition, null=True, blank=True, on_delete=models.SET_NULL)
     lecture_group_name = models.CharField(max_length=255)
     is_essential = models.BooleanField(default=False)
+    multi_lecture_group = models.ForeignKey(MultiLectureGroup, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.lecture_group_name
-
 
 class LectureIdentification(models.Model):
 

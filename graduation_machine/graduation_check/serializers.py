@@ -7,6 +7,7 @@ from .models import CommonLectureGroup
 from .models import Condition
 from .models import LectureIdentificationLectureGroup
 from .models import CommonLectureGroupLectureIdentification
+from .models import MultiLectureGroup
 
 class ConditionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,6 +36,11 @@ class LectureGroupSerializer(serializers.ModelSerializer):
         return obj.lecture_condition.condition_name
     def get_lectureConditionId(self, obj):
         return obj.lecture_condition.id
+
+class MultiLectureGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MultiLectureGroup
+        fields = ['id', 'minimum_number', 'maximum_number']
 
 class LectureIdentificationSerializer(serializers.ModelSerializer):
     class Meta:

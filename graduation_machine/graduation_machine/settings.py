@@ -17,7 +17,7 @@ SECRET_KEY = 'django-insecure-7u)dkohvtf%3q1%5612ug#z$0(osjwb)a()uaa%c5#sez7^w8l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['dongguk-cse-graduationcheck.site', 'localhost']
+ALLOWED_HOSTS = [os.getenv('ALLOWED_HOST_DOMAIN'), os.getenv('ALLOWED_HOST_IP'), 'localhost']
 
 
 # Application definition

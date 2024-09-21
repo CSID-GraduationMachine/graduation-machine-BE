@@ -20,8 +20,9 @@ class LectureGroupService:
 
             condition = LectureCondition.objects.get(id=lecture_condition_id).condition
 
-            # 현재 condition 상에서, 현재 강의 그룹과 선이수 강의 그룹을 제외한 강의 그룹을 조회
+            # 현재 condition 상에서, 현재 condition에 포함되어있지 않은 lecture group들을 제외 + 현재 강의 그룹과 선이수 강의 그룹을 제외한 강의 그룹을 조회
             available_groups = LectureGroup.objects.exclude(
+                ~Q(lecture_condition__condition = condition) |
                 Q(lecture_condition__condition=condition) &
                 (
                         Q(id=lecture_group_id) |
