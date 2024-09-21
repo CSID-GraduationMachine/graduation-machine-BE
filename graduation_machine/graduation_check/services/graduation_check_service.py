@@ -127,7 +127,6 @@ class GraduationCheckService:
                         else:
                             prerequests = Prerequest.objects.filter(lecture_group=lecture_group, year=matching_lectures[0].lecture_identification.year)  # 해당 lecture_group의 선이수들을 가져와서
                         prerequests_count = prerequests.count()
-                        print(prerequests_count)
                         for prerequest in prerequests:
                             lecture_identification_lecture_group = LectureIdentificationLectureGroup.objects.filter(
                                 lecture_group=prerequest.prerequest_lecture_group)
@@ -142,7 +141,6 @@ class GraduationCheckService:
                             }
                             prerequest_group_list.append(prerequest_check_data)  # 리스트에 추가
                             prerequests_count -= 1
-                            print('선이수 과목'+prerequest.prerequest_lecture_group.lecture_group_name+'이후 카운트:')
                             print(prerequests_count)
                         if prerequests_count == 0 and grade != 'F':  # 선이수가 없는데 F가 아니라면
                             lecture_group_is_passed = True
