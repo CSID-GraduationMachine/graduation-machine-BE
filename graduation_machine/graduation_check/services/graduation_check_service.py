@@ -92,7 +92,6 @@ class GraduationCheckService:
                 lecture_group_is_essential = lecture_group.is_essential
                 lecture_group_lecture_identifications = LectureIdentificationLectureGroup.objects.filter(
                     lecture_group=lecture_group)  # 해당 lecture_group에 속한 lecture_identification들을 가져와서
-                lecture_identification_item = None # lecture_identification_item 초기화
                 prerequest_group_list= []
                 matching_lectures_identifications_temp = lecture_group_lecture_identifications.filter(lecture_identification__code__in=user_lectures_codes).select_related('lecture_identification')
                 matching_lectures = matching_lectures_identifications_temp.filter(
@@ -128,6 +127,7 @@ class GraduationCheckService:
                         else:
                             prerequests = Prerequest.objects.filter(lecture_group=lecture_group, year=matching_lectures[0].lecture_identification.year)  # 해당 lecture_group의 선이수들을 가져와서
                         prerequests_count = prerequests.count()
+                        print(prerequests_count)
                         for prerequest in prerequests:
                             lecture_identification_lecture_group = LectureIdentificationLectureGroup.objects.filter(
                                 lecture_group=prerequest.prerequest_lecture_group)
@@ -142,6 +142,8 @@ class GraduationCheckService:
                             }
                             prerequest_group_list.append(prerequest_check_data)  # 리스트에 추가
                             prerequests_count -= 1
+                            print('선이수 과목'+prerequest.prerequest_lecture_group.lecture_group_name+'이후 카운트:')
+                            print(prerequests_count)
                         if prerequests_count == 0 and grade != 'F':  # 선이수가 없는데 F가 아니라면
                             lecture_group_is_passed = True
                         else:
@@ -199,13 +201,15 @@ class GraduationCheckService:
                                                         for lecture_identification_lecture_group in
                                                         lecture_identification_lecture_group
                                                         if lecture_identification_lecture_group.lecture_identification.year <= prerequest.year]
+                            prerequest_status = any(code in user_lectures_codes for code in prerequest_lecture_codes)
                             prerequest_check_data = {
                                 "id": prerequest.prerequest_lecture_group.id,
                                 "name": prerequest.prerequest_lecture_group.lecture_group_name,
-                                "status": any(code in user_lectures_codes for code in prerequest_lecture_codes)
+                                "status": prerequest_status
                             }
                             prerequest_group_list.append(prerequest_check_data)  # 리스트에 추가
-                            prerequests_count -= 1
+                            if prerequest_status:
+                                prerequests_count -= 1
                         if prerequests_count == 0 and user_number >= minimum_number and user_number <= maximum_number:  # 선이수를 다 들었고, 최소, 최대 강의 수 사이에 있다면
                             lecture_group_is_passed = True
                         else:
