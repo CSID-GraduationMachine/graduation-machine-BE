@@ -21,6 +21,7 @@ class LectureCondition(models.Model):
         return self.condition_name
 
 class MultiLectureGroup(models.Model):
+    id = models.OneToOneField('LectureGroup', on_delete=models.CASCADE, primary_key=True, db_column='id')
     minimum_number = models.IntegerField()
     maximum_number = models.IntegerField()
 

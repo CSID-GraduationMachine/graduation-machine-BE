@@ -6,7 +6,8 @@ class MultiLectureGroupService:
             if LectureGroup.objects.get(id=lecture_group_id).multi_lecture_group is not None:
                 raise ValueError("이미 등록된 다중 강의 그룹입니다.")
             else:
-                multi_lecture_group = MultiLectureGroup.objects.create(minimum_number=1, maximum_number=1)
+                lecture_group = LectureGroup.objects.get(id=lecture_group_id)
+                multi_lecture_group = MultiLectureGroup.objects.create(id = lecture_group, minimum_number=1, maximum_number=1)
                 lecture_group = LectureGroup.objects.get(id=lecture_group_id)
                 lecture_group.multi_lecture_group = multi_lecture_group
                 lecture_group.save()
@@ -15,8 +16,22 @@ class MultiLectureGroupService:
 
     def get_multi_lecture_groups(lecture_group_id):
         try:
+            # LectureGroup이 존재하지 않는 경우 예외 처리
             lecture_group = LectureGroup.objects.get(id=lecture_group_id)
-            return MultiLectureGroup.objects.filter(id=lecture_group.multi_lecture_group.id)
+
+            # LectureGroup에 연결된 MultiLectureGroup이 없는 경우 예외 처리
+            if not hasattr(lecture_group, 'multi_lecture_group') or lecture_group.multi_lecture_group is None:
+                print(f"LectureGroup {lecture_group_id} has no associated MultiLectureGroup.")
+                return None
+
+            return MultiLectureGroup.objects.get(id=lecture_group.multi_lecture_group.id)
+
+        except LectureGroup.DoesNotExist:
+            print(f"LectureGroup with id {lecture_group_id} does not exist.")
+            return None
+        except MultiLectureGroup.DoesNotExist:
+            print(f"MultiLectureGroup associated with LectureGroup {lecture_group_id} does not exist.")
+            return None
         except Exception as e:
             print(f"An unexpected error occurred while fetching multi lecture groups: {str(e)}")
             return None
