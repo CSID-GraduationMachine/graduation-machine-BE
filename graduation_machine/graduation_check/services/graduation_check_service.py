@@ -23,6 +23,7 @@ class GraduationCheckService:
                     return lecture
             return None
         unfiltered_lectures = []
+        to_remove = []
         for user_lecture in user_lectures:
             if not LectureIdentification.objects.filter(code=user_lecture['code']).exists():
                 unfiltered_lectures.append({
@@ -33,8 +34,11 @@ class GraduationCheckService:
                     'grade': user_lecture['grade'],
                     'credit': user_lecture['credit']
                 })
-                user_lectures.remove(user_lecture)
-                user_lectures_codes.remove(user_lecture['code'])
+                to_remove.append(user_lecture)
+
+        for lecture in to_remove:
+            user_lectures.remove(lecture)
+            user_lectures_codes.remove(lecture['code'])
         # 1. 총 이수 최소 학점 확인
         total_credit = 0
 
@@ -90,7 +94,7 @@ class GraduationCheckService:
             lecture_group_is_passed = False  # 수강 여부 + 선이수 만족 여부
             for lecture_group in lecture_groups:  # 각각의 lecture_group에 대해
                 lecture_group_is_essential = lecture_group.is_essential
-                lecture_group_lecture_identifications = LectureIdentificationLectureGroup.objects.filter(
+                lecture_group_lecture_identifications = LectureIdentificationLectureGroup.objects.select_related('lecture_identification').filter(
                     lecture_group=lecture_group)  # 해당 lecture_group에 속한 lecture_identification들을 가져와서
                 prerequest_group_list= []
                 matching_lectures_identifications_temp = lecture_group_lecture_identifications.filter(lecture_identification__code__in=user_lectures_codes).select_related('lecture_identification')
@@ -159,6 +163,7 @@ class GraduationCheckService:
                         "isPassed": lecture_group_is_passed,
                         "isEssential": lecture_group_is_essential,
                         "lectureIdentificationItem": lecture_identification_item,
+                        "multiLectureIdentificationItem": [],
                         "preLectureGroupList": prerequest_group_list  # 리스트 추가
                     })
 
@@ -224,7 +229,8 @@ class GraduationCheckService:
                         "name": lecture_group.lecture_group_name,
                         "isPassed": lecture_group_is_passed,
                         "isEssential": lecture_group_is_essential,
-                        "lectureIdentificationItem": lecture_identification_items,
+                        "lectureIdentificationItem": {},
+                        "multiLectureIdentificationItem": lecture_identification_items,
                         "preLectureGroupList": prerequest_group_list  # 리스트 추가
                     })
                 else:
@@ -234,6 +240,7 @@ class GraduationCheckService:
                         "isPassed": lecture_group_is_passed,
                         "isEssential": lecture_group_is_essential,
                         "lectureIdentificationItem": {},
+                        "multiLectureIdentificationItem": [],
                         "preLectureGroupList": []  # 빈 리스트 추가
                     })
 
@@ -314,4 +321,3 @@ class GraduationCheckService:
             data['grade']['isPassed'] = True
         # 결과 JSON 반환
         return data
-
