@@ -27,15 +27,31 @@ class LectureGroupSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     lectureConditionName = serializers.SerializerMethodField()
     lectureConditionId = serializers.SerializerMethodField()
+    is_multi_lecture = serializers.SerializerMethodField()
+    maximum_number = serializers.SerializerMethodField()
+    minimum_number = serializers.SerializerMethodField()
+
     class Meta:
         model = LectureGroup
-        fields = ['id', 'name', 'is_essential', 'lectureConditionName', 'lectureConditionId']
+        fields = ['id', 'name', 'is_essential', 'is_multi_lecture', 'maximum_number', 'minimum_number', 'lectureConditionName', 'lectureConditionId']
     def get_name(self, obj):
         return obj.lecture_group_name
     def get_lectureConditionName(self, obj):
         return obj.lecture_condition.condition_name
     def get_lectureConditionId(self, obj):
         return obj.lecture_condition.id
+    def get_is_multi_lecture(self, obj):
+        if obj.multi_lecture_group is None:
+            return False
+        return True
+    def get_maximum_number(self, obj):
+        if obj.multi_lecture_group is None:
+            return None
+        return obj.multi_lecture_group.maximum_number
+    def get_minimum_number(self, obj):
+        if obj.multi_lecture_group is None:
+            return None
+        return obj.multi_lecture_group.minimum_number
 
 class MultiLectureGroupSerializer(serializers.ModelSerializer):
     class Meta:

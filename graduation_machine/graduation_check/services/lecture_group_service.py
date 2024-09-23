@@ -1,4 +1,4 @@
-from ..models import LectureGroup, Prerequest, LectureCondition
+from ..models import LectureGroup, Prerequest, LectureCondition, MultiLectureGroup
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
@@ -41,12 +41,21 @@ class LectureGroupService:
             print(f"An unexpected error occurred while creating lecture group: {str(e)}")
             return None
     @staticmethod
-    def update_lecture_group(lecture_group_id, lecture_group_name, is_essential):
+    def update_lecture_group(lecture_group_id, lecture_group_name, is_essential, maximum_number, minimum_number):
         try:
             lecture_group = LectureGroup.objects.get(id=lecture_group_id)
             lecture_group.lecture_group_name = lecture_group_name
             lecture_group.is_essential = is_essential
             lecture_group.save()
+            if maximum_number is not None and minimum_number is not None:
+                if lecture_group.multi_lecture_group is None:
+                    multi_lecture_group = MultiLectureGroup.objects.create(id=lecture_group, minimum_number=minimum_number, maximum_number=maximum_number)
+                    lecture_group.multi_lecture_group = multi_lecture_group
+                    lecture_group.save()
+                else:
+                    lecture_group.multi_lecture_group.minimum_number = minimum_number
+                    lecture_group.multi_lecture_group.maximum_number = maximum_number
+                    lecture_group.multi_lecture_group.save()
             return lecture_group
         except ObjectDoesNotExist:
             return None
