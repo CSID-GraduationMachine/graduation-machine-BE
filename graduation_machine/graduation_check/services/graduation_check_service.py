@@ -138,7 +138,34 @@ class GraduationCheckService:
                                                         for lecture_identification_lecture_group in
                                                         lecture_identification_lecture_group
                                                         if lecture_identification_lecture_group.lecture_identification.year <= prerequest.year]
-                            prerequest_status = any(code in user_lectures_codes for code in prerequest_lecture_codes)
+
+                            user_prerequest_lecture_code = next((code for code in prerequest_lecture_codes if code in user_lectures_codes), None) # 선이수 강의 idenficiations들 중 사용자가 들은 강의 identification의 코드
+                            if user_prerequest_lecture_code is None:
+                                prerequest_status = False
+                            else:
+                                user_prerequest_lecture = get_user_lecture_for_code(user_prerequest_lecture_code)
+                                prerequest_year_season = float(user_prerequest_lecture['year'])
+                                if user_prerequest_lecture['season'] == '1':
+                                    prerequest_year_season += 0.1
+                                elif user_prerequest_lecture['season'] == '2':
+                                    prerequest_year_season += 0.2
+                                elif user_prerequest_lecture['season'] == 'summer':
+                                    prerequest_year_season += 0.15
+                                elif user_prerequest_lecture['season'] == 'winter':
+                                    prerequest_year_season += 0.25
+
+                                matching_lecture = matching_lectures[0]
+                                matching_year_season = float(matching_lecture.lecture_identification.year)
+                                if matching_lecture.lecture_identification.season == '1':
+                                    matching_year_season += 0.1
+                                elif matching_lecture.lecture_identification.season == '2':
+                                    matching_year_season += 0.2
+                                elif matching_lecture.lecture_identification.season == 'summer':
+                                    matching_year_season += 0.15
+                                elif matching_lecture.lecture_identification.season == 'winter':
+                                    matching_year_season += 0.25
+                                prerequest_status = prerequest_year_season < matching_year_season
+
                             prerequest_check_data = {
                                 "id": prerequest.prerequest_lecture_group.id,
                                 "name": prerequest.prerequest_lecture_group.lecture_group_name,
@@ -160,6 +187,9 @@ class GraduationCheckService:
                     lecture_group_list.append({
                         "id": lecture_group.id,
                         "name": lecture_group.lecture_group_name,
+                        "isMultiGroup": True if lecture_group.multi_lecture_group is not None else False,
+                        "maximumNumber": lecture_group.multi_lecture_group.maximum_number if lecture_group.multi_lecture_group is not None else 0,
+                        "minimumNumber": lecture_group.multi_lecture_group.minimum_number if lecture_group.multi_lecture_group is not None else 0,
                         "isPassed": lecture_group_is_passed,
                         "isEssential": lecture_group_is_essential,
                         "lectureIdentificationItem": lecture_identification_item,
@@ -174,6 +204,7 @@ class GraduationCheckService:
                     lecture_identification_items=[]
 
                     for matching_lecture in matching_lectures:
+
                         grade = get_user_lecture_for_code(matching_lecture.lecture_identification.code)['grade']
                         if(grade != 'F'):
                             lecture_condition_passed_credit += matching_lecture.lecture_identification.credit
@@ -205,7 +236,33 @@ class GraduationCheckService:
                                                         for lecture_identification_lecture_group in
                                                         lecture_identification_lecture_group
                                                         if lecture_identification_lecture_group.lecture_identification.year <= prerequest.year]
-                            prerequest_status = any(code in user_lectures_codes for code in prerequest_lecture_codes)
+                            user_prerequest_lecture_code = next((code for code in prerequest_lecture_codes if code in user_lectures_codes), None) # 선이수 강의 idenficiations들 중 사용자가 들은 강의 identification의 코드
+                            if user_prerequest_lecture_code is None:
+                                prerequest_status = False
+                            else:
+                                user_prerequest_lecture = get_user_lecture_for_code(user_prerequest_lecture_code)
+                                prerequest_year_season = float(user_prerequest_lecture['year'])
+                                if user_prerequest_lecture['season'] == '1':
+                                    prerequest_year_season += 0.1
+                                elif user_prerequest_lecture['season'] == '2':
+                                    prerequest_year_season += 0.2
+                                elif user_prerequest_lecture['season'] == 'summer':
+                                    prerequest_year_season += 0.15
+                                elif user_prerequest_lecture['season'] == 'winter':
+                                    prerequest_year_season += 0.25
+
+                                matching_lecture = matching_lectures[0]
+                                matching_year_season = float(matching_lecture.lecture_identification.year)
+                                if matching_lecture.lecture_identification.season == '1':
+                                    matching_year_season += 0.1
+                                elif matching_lecture.lecture_identification.season == '2':
+                                    matching_year_season += 0.2
+                                elif matching_lecture.lecture_identification.season == 'summer':
+                                    matching_year_season += 0.15
+                                elif matching_lecture.lecture_identification.season == 'winter':
+                                    matching_year_season += 0.25
+                                prerequest_status = prerequest_year_season < matching_year_season
+
                             prerequest_check_data = {
                                 "id": prerequest.prerequest_lecture_group.id,
                                 "name": prerequest.prerequest_lecture_group.lecture_group_name,
@@ -227,6 +284,9 @@ class GraduationCheckService:
                     lecture_group_list.append({
                         "id": lecture_group.id,
                         "name": lecture_group.lecture_group_name,
+                        "isMultiGroup": True if lecture_group.multi_lecture_group is not None else False,
+                        "maximumNumber": lecture_group.multi_lecture_group.maximum_number if lecture_group.multi_lecture_group is not None else 0,
+                        "minimumNumber": lecture_group.multi_lecture_group.minimum_number if lecture_group.multi_lecture_group is not None else 0,
                         "isPassed": lecture_group_is_passed,
                         "isEssential": lecture_group_is_essential,
                         "lectureIdentificationItem": {},
@@ -237,6 +297,9 @@ class GraduationCheckService:
                     lecture_group_list.append({
                         "id": lecture_group.id,
                         "name": lecture_group.lecture_group_name,
+                        "isMultiGroup": True if lecture_group.multi_lecture_group is not None else False,
+                        "maximumNumber": lecture_group.multi_lecture_group.maximum_number if lecture_group.multi_lecture_group is not None else 0,
+                        "minimumNumber": lecture_group.multi_lecture_group.minimum_number if lecture_group.multi_lecture_group is not None else 0,
                         "isPassed": lecture_group_is_passed,
                         "isEssential": lecture_group_is_essential,
                         "lectureIdentificationItem": {},
@@ -313,6 +376,8 @@ class GraduationCheckService:
                 user_total_credit += user_lecture['credit']
             else:
                 continue
+        print(user_lecture_score)
+        print(user_total_credit)
         if user_lecture_score / total_credit < 2.0:
             data['grade']['gpa'] = f"{user_lecture_score / user_total_credit}"
             data['grade']['isPassed'] = False
