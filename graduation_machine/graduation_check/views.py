@@ -161,9 +161,10 @@ class LectureGroupViewSet(
         lecture_group_id = kwargs.get('groups_pk')
         lecture_group_name = request.data.get('name')
         is_essential = request.data.get('is_essential')
+        is_multi_lecture = request.data.get('is_multi_lecture')
         maximum_number = request.data.get('maximum_number')
         minimum_number = request.data.get('minimum_number')
-        LectureGroupService.update_lecture_group(lecture_group_id, lecture_group_name, is_essential, maximum_number, minimum_number)
+        LectureGroupService.update_lecture_group(lecture_group_id, lecture_group_name, is_essential, is_multi_lecture, maximum_number, minimum_number)
         return Response({"success": True, "data": None, "error": None})
     def destroy(self, request, *args, **kwargs):
         """

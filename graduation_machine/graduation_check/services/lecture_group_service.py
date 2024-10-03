@@ -41,26 +41,30 @@ class LectureGroupService:
             print(f"An unexpected error occurred while creating lecture group: {str(e)}")
             return None
     @staticmethod
-    def update_lecture_group(lecture_group_id, lecture_group_name, is_essential, maximum_number, minimum_number):
+    def update_lecture_group(lecture_group_id, lecture_group_name, is_essential, is_multi_lecture, maximum_number, minimum_number):
         try:
+            # LectureGroup 객체를 가져옴
             lecture_group = LectureGroup.objects.get(id=lecture_group_id)
             lecture_group.lecture_group_name = lecture_group_name
             lecture_group.is_essential = is_essential
             lecture_group.save()
-            if maximum_number is not None and minimum_number is not None:
-                if lecture_group.multi_lecture_group is None:
-                    multi_lecture_group = MultiLectureGroup.objects.create(id=lecture_group, minimum_number=minimum_number, maximum_number=maximum_number)
-                    lecture_group.multi_lecture_group = multi_lecture_group
-                    lecture_group.save()
-                else:
-                    lecture_group.multi_lecture_group.minimum_number = minimum_number
-                    lecture_group.multi_lecture_group.maximum_number = maximum_number
-                    lecture_group.multi_lecture_group.save()
-            return lecture_group
-        except ObjectDoesNotExist:
-            return None
-        except Exception as e:
-            print(f"An unexpected error occurred while updating lecture group: {str(e)}")
+
+            # 다중 강의 그룹 존재 여부 확인
+            multi_lecture_group = MultiLectureGroup.objects.filter(id=lecture_group_id).first()
+
+            if is_multi_lecture and multi_lecture_group is None: # 다중 강의 그룹이 없는데 true인 경우 생성
+                multi_lecture_group = MultiLectureGroup.objects.create(id=lecture_group, minimum_number=minimum_number, maximum_number=maximum_number)
+                lecture_group.multi_lecture_group = multi_lecture_group
+                lecture_group.save()
+            elif is_multi_lecture and multi_lecture_group is not None: # 다중강의 그룹이 있는데 true인 경우 수정
+                multi_lecture_group.minimum_number = minimum_number
+                multi_lecture_group.maximum_number = maximum_number
+                multi_lecture_group.save()
+            elif not is_multi_lecture and multi_lecture_group is not None: # 다중 강의 그룹이 있는데 false인 경우 삭제
+                multi_lecture_group.delete()
+
+        except LectureGroup.DoesNotExist:
+            print(f"LectureGroup with id {lecture_group_id} does not exist.")
             return None
     @staticmethod
     def delete_lecture_group(lecture_group_id):
