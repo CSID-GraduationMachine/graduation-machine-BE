@@ -10,7 +10,10 @@ class GraduationCheckService:
             'total_credit': {},
             'grade': {}
         }
-
+        unsatisfied = []
+        unsatisfied_essential_lecture_group = []
+        unsatisfied_pre_lecture_group = []
+        unsatisfied_conditions = []
         condition = Condition.objects.get(year = year, tech = tech)
         if password == None:
             user_lectures = GraduationCheckUtil.read_report_card_mdrims(excel_file)
@@ -50,10 +53,11 @@ class GraduationCheckService:
         if total_credit < graduation_minimum_total_credit:
             data['total_credit']['ratio'] = f"{total_credit}/{graduation_minimum_total_credit}"
             data['total_credit']['value'] = False
+            unsatisfied.append({'totalCredit':graduation_minimum_total_credit - total_credit})
         else:
             data['total_credit']['ratio'] = f"{total_credit}/{graduation_minimum_total_credit}"
             data['total_credit']['value'] = True
-
+            unsatisfied.append({'totalCredit':0})
         # 2. 필수 강의 수강 여부 확인
         lecture_conditions = LectureCondition.objects.filter(condition = condition) # 2020학번 심화과정 졸업 요건들 중
         for lecture_condition in lecture_conditions: # 각각의 졸업 요건 안에,
@@ -75,7 +79,8 @@ class GraduationCheckService:
                         "value": check_value
                     }
                     data['essential_lecture_group'].append(essential_status)
-
+                    if check_value == False:
+                        unsatisfied_essential_lecture_group.append({'name':group_name})
 
         # 3. 각각의 졸업 요건 만족 여부 확인
         lecture_conditions = LectureCondition.objects.filter(condition=condition) # 유저의 졸업 요건(몇학번인지, 어떤 과정인지)을 가져와서
@@ -140,8 +145,9 @@ class GraduationCheckService:
                                                         if lecture_identification_lecture_group.lecture_identification.year <= prerequest.year]
 
                             user_prerequest_lecture_code = next((code for code in prerequest_lecture_codes if code in user_lectures_codes), None) # 선이수 강의 idenficiations들 중 사용자가 들은 강의 identification의 코드
-                            if user_prerequest_lecture_code is None:
+                            if user_prerequest_lecture_code is None or get_user_lecture_for_code(user_prerequest_lecture_code)['grade'] == 'F':
                                 prerequest_status = False
+                                unsatisfied_pre_lecture_group.append({'name':lecture_group.lecture_group_name,'preName':prerequest.prerequest_lecture_group.lecture_group_name})
                             else:
                                 user_prerequest_lecture = get_user_lecture_for_code(user_prerequest_lecture_code)
                                 prerequest_year_season = float(user_prerequest_lecture['year'])
@@ -165,7 +171,8 @@ class GraduationCheckService:
                                 elif matching_lecture.lecture_identification.season == 'winter':
                                     matching_year_season += 0.25
                                 prerequest_status = prerequest_year_season < matching_year_season
-
+                                if not prerequest_status:
+                                    unsatisfied_pre_lecture_group.append({'name':lecture_group.lecture_group_name,'preName':prerequest.prerequest_lecture_group.lecture_group_name})
                             prerequest_check_data = {
                                 "id": prerequest.prerequest_lecture_group.id,
                                 "name": prerequest.prerequest_lecture_group.lecture_group_name,
@@ -237,7 +244,7 @@ class GraduationCheckService:
                                                         lecture_identification_lecture_group
                                                         if lecture_identification_lecture_group.lecture_identification.year <= prerequest.year]
                             user_prerequest_lecture_code = next((code for code in prerequest_lecture_codes if code in user_lectures_codes), None) # 선이수 강의 idenficiations들 중 사용자가 들은 강의 identification의 코드
-                            if user_prerequest_lecture_code is None:
+                            if user_prerequest_lecture_code is None or get_user_lecture_for_code(user_prerequest_lecture_code)['grade'] == 'F':
                                 prerequest_status = False
                             else:
                                 user_prerequest_lecture = get_user_lecture_for_code(user_prerequest_lecture_code)
@@ -306,11 +313,11 @@ class GraduationCheckService:
                         "multiLectureIdentificationItem": [],
                         "preLectureGroupList": []  # 빈 리스트 추가
                     })
-
             if lecture_condition_passed_credit >= lecture_condition_minimum_credit:
                 lecture_condition_is_passed = True
             else:
                 lecture_condition_is_passed = False
+                unsatisfied_conditions.append({'name': lecture_condition_name, 'credit': lecture_condition_minimum_credit - lecture_condition_passed_credit})
 
             data['lectureConditionList'].append({
                 "id": lecture_condition_id,
@@ -320,6 +327,9 @@ class GraduationCheckService:
                 "passedCredit": lecture_condition_passed_credit,
                 "lectureGroupList": lecture_group_list
             })
+        unsatisfied.append({'essentialLectureGroup': unsatisfied_essential_lecture_group})
+        unsatisfied.append({'preLectureGroup': unsatisfied_pre_lecture_group})
+        unsatisfied.append({'conditions': unsatisfied_conditions})
         # 4. 일반교양 과목 확인, 필터링되지 않은 과목 확인
         general_education_lectures = []  # 일반교양 과목을 저장할 리스트 초기화
         all_lecture_conditions_lectures = set()  # 모든 강의 조건에 속하는 강의 코드 저장
@@ -341,7 +351,7 @@ class GraduationCheckService:
                 })
         data['generalEducation'] = general_education_lectures  # 최종 데이터 구조에 일반교양 섹션 추가
         data['unfilteredLectures'] = unfiltered_lectures  # 최종 데이터 구조에 필터링되지 않은 섹션 추가
-
+        data['unsatisfied'] = unsatisfied
         # 5. 학점 평점 2.0 이상 확인
         user_lecture_score = 0.0
         user_total_credit = 0
